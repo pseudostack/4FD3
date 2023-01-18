@@ -1,44 +1,42 @@
 import logo from './logo.svg';
-import { Button, Card, } from 'react-bootstrap';
+import React, {useState,useEffect} from 'react';
+import { Button, Card, Spinner } from 'react-bootstrap';
 import './App.css';
 
+
 function App() {
+
+const [listingsData, setListingsData] = useState(false);
+
+useEffect(()=>{
+    var listingsJson = require('./listings.json');
+    setListingsData(listingsJson);
+    console.log(listingsData);
+}, [])
+
+
+if (listingsData !== false){
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <Button variant="danger" size="lg">
-          Whoa Dude
-        </Button>
-        <Card className='mb-4'>
-          <Card.Header>
-            Header
-          </Card.Header>
-          <Card.Body>
-            <Card.Title>
-              My Title
-            </Card.Title>
-            Test
-          </Card.Body>
-        </Card>
-        <Card className='mb-4'>
-          Test2
-        </Card>
-        <h6>My Test Change</h6>
+       {listingsData.listings.map(listings => (
+      <Card className='mb-3' style={{ width: '18rem' }}>
+  <Card.Body>
+    <Card.Title>Seller: {listings.seller}</Card.Title>
+    <Card.Text>
+{listings.year} {listings.make} {listings.model}
+    </Card.Text>
+    <Button variant="primary">Bid</Button>
+  </Card.Body>
+</Card>
+))}
       </header>
+
+
+
     </div>
   );
+}
 }
 
 export default App;
