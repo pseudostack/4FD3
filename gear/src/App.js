@@ -20,7 +20,7 @@ if (listingsData !== false){
     <div className="App">
       <header className="App-header">
        {listingsData.listings.map(listings => (
-      <Card style={{ width: '18rem' }}>
+      <Card className='mb-3' style={{ width: '18rem' }}>
   <Card.Body>
     <Card.Title>Seller: {listings.seller}</Card.Title>
     <Card.Text>
