@@ -6,12 +6,12 @@ import { serverUrl } from './routes/url'
 
 function App() {
 
-const [listingsData, setListingsData] = useState(false);
+const [listings, setListingsData] = useState([]);
 
 
 function refreshListings()
 {
-  setListingsData({listings: []})
+  setListingsData([])
   fetch(serverUrl + 'listings')
   .then(data => data.json())
   .then(data =>
@@ -28,12 +28,12 @@ useEffect(() => {
     <div className="App">
       <Button onClick={refreshListings}>Refresh Listings</Button>
       <header className="App-header">
-       {listingsData !== false && listingsData.listings.map(listings => (
+       {listings.map(listings => (
       <Card className='mb-3' style={{ width: '18rem' }}>
   <Card.Body>
-    <Card.Title>Seller: {listings.seller}</Card.Title>
+    <Card.Title>Seller: {listings.Seller}</Card.Title>
     <Card.Text>
-{listings.year} {listings.make} {listings.model}
+{listings.Year} {listings.Make} {listings.Model}
     </Card.Text>
     <Button variant="primary">Bid</Button>
   </Card.Body>

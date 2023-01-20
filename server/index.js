@@ -2,8 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 const port = 3001
-
-const listings = require('./listings.json')
+const database = require('./database')
 
 app.use(cors());
 
@@ -13,10 +12,10 @@ app.get('/', (req, res) => {
 })
 
 app.get('/listings', (req, res) => {
-    // for now, I'm simulating a load time here, @TODO: remove this later.
-    setTimeout(() => {
-        res.json(listings);
-    }, 1000);
+    const connection = database.getConnection();
+    connection.query('SELECT * FROM Listing', (error, results, fields) => {
+        res.json(results);
+    });
 })
 
 app.listen(port, () =>
