@@ -9,8 +9,8 @@ const app = express()
 const port = 3001
 const database = require('./database')
 
+const pool = database.getPool();
 const eventEmitter = new EventEmitter();
-const sqlConnection = database.getConnection();
 
 async function sleep(ms) {
    return new Promise((resolve) => {
@@ -23,7 +23,7 @@ async function emitListingInfo() {
      console.log("inside main function")
       const waitTimeMS = Math.floor(Math.random() * 1000);
       await sleep(waitTimeMS);
-      sqlConnection.query('SELECT * FROM Listing', (error, results, fields) => {
+      pool.query('SELECT * FROM Listing', (error, results, fields) => {
           eventEmitter.fire(results);
           //console.log("event emitted: " + results);
       });
@@ -69,14 +69,14 @@ app.post('/listingBid',(req, res) => {
     let sql = "UPDATE Listing SET currentBid = ? WHERE Seller = ?";
     let data = [req.body.bid,req.body.seller];
 
-    let query = sqlConnection.query(sql, data,(err, results) => {
+    let query = pool.query(sql, data,(err, results) => {
         if(err) throw err;
         res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
     });
 });
 
 app.get('/listings', (req, res) => {
-    sqlConnection.query('SELECT * FROM Listing', (error, results, fields) => {
+    pool.query('SELECT * FROM Listing', (error, results, fields) => {
         res.json(results);
     });
 })

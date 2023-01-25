@@ -5,14 +5,13 @@ const host = 'localhost'
 const user = 'admin'
 const password = 'secret'
 
-exports.getConnection = () =>
+exports.getPool = () =>
 {
-    const connection = sql.createConnection({
+    return sql.createPool({
+        connectionLimit: 100,
         host: host,
         user: user,
         password: password,
         database: 'Gear'
     });
-    connection.connect();
-    return connection;
 }
