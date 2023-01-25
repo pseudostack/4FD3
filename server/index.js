@@ -1,15 +1,80 @@
 const express = require('express')
 const cors = require('cors')
+const EventEmitter = require('./event.js')
+var bodyParser = require('body-parser')
+var jsonParser = bodyParser.json()
+var urlencodedParser = bodyParser.urlencoded({ extended: false })
+
 const app = express()
 const port = 3001
 const database = require('./database')
 
-app.use(cors());
+const eventEmitter = new EventEmitter();
 
-// respond with "hello world" when a GET request is made to the homepage
-app.get('/', (req, res) => {
-    res.send('hello world')
-})
+async function sleep(ms) {
+   return new Promise((resolve) => {
+     setTimeout(resolve, ms);
+   }).catch(function() {});
+ }
+
+async function emitListingInfo() {
+   while (true) {
+     console.log("inside main function")
+      const waitTimeMS = Math.floor(Math.random() * 1000);
+      await sleep(waitTimeMS);
+      const connection = database.getConnection();
+      connection.query('SELECT * FROM Listing', (error, results, fields) => {
+          eventEmitter.fire(results);
+          //console.log("event emitted: " + results);
+      });
+   }
+ }
+
+emitListingInfo();
+
+app.use(express.urlencoded());
+app.use(bodyParser.json())
+app.use(cors({ credentials: true }))
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+app.get('/', function (req, res) {
+   const id = Date.now().toString();
+   var timer = null;
+   const handler = function(event) {
+      clearTimeout(timer);
+      //console.log('event', event);
+      res.status(201);
+      res.end(JSON.stringify(event));
+   };
+
+   eventEmitter.register(id, handler);
+   timer = setTimeout(function(){
+      console.log('timeout');
+      const wasUnregistered = eventEmitter.unregister(id);
+      //console.log("wasUnregistered", wasUnregistered);
+      if (wasUnregistered){
+         res.status(200);
+         res.end();
+      }
+   }, 5000);
+});
+
+app.post('/listingBid',(req, res) => {
+    console.log("received bid: " + JSON.stringify(req.body.bid) + " from seller: " + JSON.stringify(req.body.seller) )
+
+    const conn = database.getConnection();
+    let sql = "UPDATE Listing SET currentBid = ? WHERE Seller = ?";
+    let data = [req.body.bid,req.body.seller];
+
+    let query = conn.query(sql, data,(err, results) => {
+        if(err) throw err;
+        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+    });
+});
 
 app.get('/listings', (req, res) => {
     const connection = database.getConnection();
