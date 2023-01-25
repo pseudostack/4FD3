@@ -8,14 +8,13 @@ const password = process.env.PASSWORD
 
 console.log(host, user, password);
 
-exports.getConnection = () =>
+exports.getPool = () =>
 {
-    const connection = sql.createConnection({
+    return sql.createPool({
+        connectionLimit: 100,
         host: host,
         user: user,
         password: password,
         database: 'Gear'
     });
-    connection.connect();
-    return connection;
 }

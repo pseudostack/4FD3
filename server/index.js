@@ -9,6 +9,7 @@ const app = express()
 const port = 3001
 const database = require('./database')
 
+const pool = database.getPool();
 const eventEmitter = new EventEmitter();
 
 async function sleep(ms) {
@@ -22,8 +23,7 @@ async function emitListingInfo() {
      console.log("inside main function")
       const waitTimeMS = Math.floor(Math.random() * 1000);
       await sleep(waitTimeMS);
-      const connection = database.getConnection();
-      connection.query('SELECT * FROM Listing', (error, results, fields) => {
+      pool.query('SELECT * FROM Listing', (error, results, fields) => {
           eventEmitter.fire(results);
           //console.log("event emitted: " + results);
       });
@@ -66,19 +66,17 @@ app.get('/', function (req, res) {
 app.post('/listingBid',(req, res) => {
     console.log("received bid: " + JSON.stringify(req.body.bid) + " from seller: " + JSON.stringify(req.body.seller) )
 
-    const conn = database.getConnection();
     let sql = "UPDATE Listing SET currentBid = ? WHERE Seller = ?";
     let data = [req.body.bid,req.body.seller];
 
-    let query = conn.query(sql, data,(err, results) => {
+    let query = pool.query(sql, data,(err, results) => {
         if(err) throw err;
         res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
     });
 });
 
 app.get('/listings', (req, res) => {
-    const connection = database.getConnection();
-    connection.query('SELECT * FROM Listing', (error, results, fields) => {
+    pool.query('SELECT * FROM Listing', (error, results, fields) => {
         res.json(results);
     });
 })
