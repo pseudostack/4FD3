@@ -13,9 +13,8 @@ function App() {
   const [listings, setListingsData] = useState([]);
   const [bid,setBid] = useState([]);
   const [bidResponse,setBidResponse] = useState([]);
+  const [date,setDate] = useState([]);
 
-  var today = new Date(),
-  date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate() + today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
 
   async function getListingInfo() {
       while (true) {
@@ -66,6 +65,12 @@ function App() {
     useEffect(() => {
     //  refreshListings()
       getListingInfo();
+
+      setInterval(() => {
+        var today = new Date().toISOString();
+        setDate(today);
+      }, 1000); 
+
     }, [])
 
     return (
@@ -83,8 +88,22 @@ function App() {
             <Card.Title>{listings.Year} {listings.Make} {listings.Model}</Card.Title>
             <Card.Text>
             <Table striped bordered hover>
-    <tr>Ends in : {new Date().getDate()-new Date(listings.auctionEnd).getDate()} days</tr>
-    <tr>Bid: {listings.currentBid}</tr>
+            <tr>
+    {Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/ (1000 * 3600 * 24)) > 0  && Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/ (1000 * 3600 * 24)) < 2 ?
+    "Ends in" +  Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/(1000 * 3600 * 24)) + ' day' :
+    Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/(1000 * 3600 * 24)) > 1  ?
+    "Ends in " +  Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/(1000 * 3600 * 24)) + ' days':
+    Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/ (1000 * 3600 * 24)) < 1 && Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/ (60 * 60*1000)) > 0?
+    "Ends in " + new Date((Date.parse(listings.auctionEnd)-Date.parse(date))).getTime() : null
+          }
+
+<tr>{Math.floor((((new Date(listings.auctionEnd).getTime())-new Date(date).getTime())% 86400000) / 3600000)}</tr> {/* hours */ }
+<tr>{Math.floor((((new Date(listings.auctionEnd).getTime()-new Date(date).getTime()) % 86400000) % 3600000) / 60000)}</tr> {/* minutes */ }
+<tr>{Math.floor((((((new Date(listings.auctionEnd).getTime()-new Date(date).getTime()) % 86400000) % 3600000) / 60000)%1)*60)}</tr> {/* seconds */ }
+
+
+    </tr>
+    <tr>Current Bid: {listings.currentBid}</tr>
   <tr>Seller: {listings.Seller}</tr>
   </Table>
             </Card.Text>

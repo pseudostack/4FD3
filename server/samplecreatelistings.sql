@@ -1,7 +1,5 @@
-CREATE DATABASE IF NOT EXISTS Gear;
-
-USE Gear;
-
+CREATE DATABASE  IF NOT EXISTS `gear` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `gear`;
 -- MySQL dump 10.13  Distrib 8.0.32, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: gear
@@ -49,7 +47,7 @@ CREATE TABLE `listing` (
 
 LOCK TABLES `listing` WRITE;
 /*!40000 ALTER TABLE `listing` DISABLE KEYS */;
-INSERT INTO `listing` VALUES ('001','Brian445','2018','Honda','Accord','Sedan','0','500','540000','2023-01-20 21:29:00','2023-04-01 20:29:00','001_front, 001_front_left, 001_front_right, 001_left, 001_rear, 001_rear_right','001_front_left'),('002','Colin29','2020','Subaru','WRX','Sedan','0','500','1000','2023-01-20 21:29:00','2023-02-25 21:29:00','002_front, 002_front_left, 002_front_right, 002_right, 002_rear_left, 002_rear_right','002_front_left'),('003','James489','2016','Toyota','RAV4','SUV','0','500','5000','2023-01-20 21:29:00','2023-02-25 21:29:00',NULL,NULL),('004','Thunder48','2019','Jeep','Wrangler','SUV','0','500','1000','2023-01-20 21:29:00','2023-02-25 21:29:00',NULL,NULL),('005','Thomas78','2020','Ford','F-150','Truck','0','500','1000','2023-01-20 21:29:00','2023-02-25 21:29:00',NULL,NULL);
+INSERT INTO `listing` VALUES ('001','Brian445','2018','Honda','Accord','Sedan','0','500','540000','2023-01-20 21:29:00','2023-04-01 20:29:00','001_front, 001_front_left, 001_front_right, 001_left, 001_rear, 001_rear_right','001_front_left'),('002','Colin29','2020','Subaru','WRX','Sedan','0','500','1000','2023-01-20 21:29:00','2023-02-25 21:29:00','002_front, 002_front_left, 002_front_right, 002_right, 002_rear_left, 002_rear_right','002_front_left'),('003','James489','2016','Toyota','RAV4','SUV','0','500','5000','2023-01-20 21:29:00','2023-01-30 00:30:00','003_front, 003_front_left, 003_left, 003_rear_right, 002_rear','003_front_left'),('004','Thunder48','2019','Jeep','Wrangler','SUV','0','500','1000','2023-01-20 21:29:00','2023-02-25 21:29:00',NULL,NULL),('005','Thomas78','2020','Ford','F-150','Truck','0','500','1000','2023-01-20 21:29:00','2023-02-25 21:29:00',NULL,NULL);
 /*!40000 ALTER TABLE `listing` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -62,4 +60,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-27 23:29:38
+-- Dump completed on 2023-01-29 18:30:28
