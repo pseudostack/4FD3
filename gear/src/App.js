@@ -17,22 +17,18 @@ function App() {
 
 
   async function getListingInfo() {
-      while (true) {
-          var error = false;
-          await axios.get('http://localhost:3001', { timeout: 1000 })
-              .then(function (response) {
-                  console.log(response.data);
-                  setListingsData(response.data);
-              })
-              .catch(function (error) {
-                  console.log('There was an error: ', error);
-                  error = true;
-              });
-          if (error) {
-              break;
-          }
+    while (true) {
+      try {
+              const response = await axios.get('http://localhost:3001', { timeout: 1000 })
+              setListingsData(response.data);
+      }
+
+      catch (error) {
+          console.log('There was an error: ', error);
+          throw new Error(error);
       }
   }
+}
 
   const handleChange = (e) => {
     e.preventDefault();
