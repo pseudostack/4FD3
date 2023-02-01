@@ -1,9 +1,12 @@
 const sql = require('mysql2')
 
-// @TODO: move into environment variables for production deploymnet
-const host = 'localhost'
-const user = 'admin'
-const password = 'secret'
+require('dotenv').config();
+
+const host = process.env.HOST
+const user = process.env.USER
+const password = process.env.PASSWORD
+
+console.log(host, user, password);
 
 exports.getPool = () =>
 {
