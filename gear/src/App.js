@@ -1,12 +1,10 @@
 import logo from './logo.svg';
 import React, {useState,useEffect} from 'react';
 import axios from 'axios';
-import {Table , Image, InputGroup, Form, Button, Card, Spinner } from 'react-bootstrap';
+import {Table, Row, Col, Image, Container, InputGroup, Form, Button, Card, Spinner } from 'react-bootstrap';
 import './App.css';
 import { serverUrl } from './routes/url'
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+
 
 function App() {
 
@@ -15,14 +13,12 @@ function App() {
   const [bidResponse,setBidResponse] = useState([]);
   const [date,setDate] = useState([]);
 
-
   async function getListingInfo() {
     while (true) {
       try {
               const response = await axios.get('http://localhost:3001', { timeout: 1000 })
               setListingsData(response.data);
       }
-
       catch (error) {
           console.log('There was an error: ', error);
           throw new Error(error);
@@ -40,11 +36,8 @@ function App() {
     console.log(e)
     console.log("about to submit custom bid to server...")
 
-
     axios.post('http://localhost:3001/listingBid', {'seller': e, 'bid': bid})
            .then(response => setBidResponse(response.data.id));
-
-
  };
 
   function refreshListings()
@@ -59,7 +52,7 @@ function App() {
     }
 
     useEffect(() => {
-    //  refreshListings()
+      //refreshListings()
       getListingInfo();
 
       setInterval(() => {
@@ -97,7 +90,6 @@ function App() {
 <tr>{Math.floor((((new Date(listings.auctionEnd).getTime()-new Date(date).getTime()) % 86400000) % 3600000) / 60000)}</tr> {/* minutes */ }
 <tr>{Math.floor((((((new Date(listings.auctionEnd).getTime()-new Date(date).getTime()) % 86400000) % 3600000) / 60000)%1)*60)}</tr> {/* seconds */ }
 
-
     </tr>
     <tr>Current Bid: {listings.currentBid}</tr>
   <tr>Seller: {listings.Seller}</tr>
@@ -121,7 +113,6 @@ function App() {
           </Row>
         </Container>
  </div>
-
       </header>
       </div>
     );
