@@ -5,7 +5,7 @@ class EventEmitter {
     fire(event) {
         for (var k in this.listeners) {
             let listener = this.listeners[k];
-            this.unregister(k); // unregister this listener
+            this.unregister(k);
             listener(event);
         }
     }
