@@ -78,18 +78,7 @@ function App() {
             <Card.Text>
             <Table striped bordered hover>
             <tr>
-    {Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/ (1000 * 3600 * 24)) > 0  && Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/ (1000 * 3600 * 24)) < 2 ?
-    "Ends in" +  Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/(1000 * 3600 * 24)) + ' day' :
-    Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/(1000 * 3600 * 24)) > 1  ?
-    "Ends in " +  Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/(1000 * 3600 * 24)) + ' days':
-    Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/ (1000 * 3600 * 24)) < 1 && Math.round((Date.parse(listings.auctionEnd)-Date.parse(date))/ (60 * 60*1000)) > 0?
-    "Ends in " + new Date((Date.parse(listings.auctionEnd)-Date.parse(date))).getTime() : null
-          }
-
-<tr>{Math.floor((((new Date(listings.auctionEnd).getTime())-new Date(date).getTime())% 86400000) / 3600000)}</tr> {/* hours */ }
-<tr>{Math.floor((((new Date(listings.auctionEnd).getTime()-new Date(date).getTime()) % 86400000) % 3600000) / 60000)}</tr> {/* minutes */ }
-<tr>{Math.floor((((((new Date(listings.auctionEnd).getTime()-new Date(date).getTime()) % 86400000) % 3600000) / 60000)%1)*60)}</tr> {/* seconds */ }
-
+     {listings.timeDiff} {listings.timeFormat}
     </tr>
     <tr>Current Bid: {listings.currentBid}</tr>
   <tr>Seller: {listings.Seller}</tr>
