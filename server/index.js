@@ -12,25 +12,142 @@ const database = require('./database')
 const pool = database.getPool();
 const eventEmitter = new EventEmitter();
 
+
+
 async function sleep(ms) {
    return new Promise((resolve) => {
      setTimeout(resolve, ms);
    }).catch(function() {});
  }
 
-async function emitListingInfo() {
-   while (true) {
-     console.log("inside main function")
-      const waitTimeMS = Math.floor(Math.random() * 1000);
-      await sleep(waitTimeMS);
+async function listingTimer(endTime)
+{
+  var today = Date.parse(new Date().toISOString());
+  var listingEndTime = Date.parse(endTime)
+
+  var timeDiff = listingEndTime - today 
+
+  var days = Math.round(timeDiff/(1000*3600*24))
+  var hrs = Math.floor((timeDiff % 86400000) / 3600000)
+  var mins = Math.floor(((timeDiff % 86400000) % 3600000) / 60000)
+  var secs = Math.floor(((((timeDiff % 86400000) % 3600000) / 60000) %1) * 60 )
+  var endTimeFormat = ""
+
+
+
+  if (days == 1)
+  {
+    return {'format': 'day',
+            'timeDiff': days
+          };
+
+  }
+  else if (days > 1)
+  {
+    return {'format': 'days',
+            'timeDiff': days
+          };
+  }
+  else if (days == 0 && hrs > 0)
+  {
+    return {'format': 'hrs',
+            'timeDiff': hrs+':'+mins+":"+secs
+          };
+
+  }
+  else if (days == 0 && hrs ==0 && mins > 0)
+  {
+    return {'format': 'mins',
+            'timeDiff': mins+":"+secs
+          };
+  }
+  else if (days == 0 & hrs ==0 && mins == 0 && secs > 0)
+  {
+    return {'format': 'secs',
+            'timeDiff': secs
+          };
+  }
+  else if (days == 0 & hrs ==0 && mins == 0 && secs == 0)
+  {
+    return {'format': 'auctionEnded',
+            'timeDiff': 'auctionEnded'
+          };
+  }
+  else  {
+    return {'format': 'error',
+            'timeDiff': 'error'
+          };
+  }
+}
+
+
+var listingsInfo = {};
+
+
+async function appendListingTimers(res){
+
+    //console.log(res.length)
+    for (var i = 0; i< res.length; i++)
+    {
+      //console.log(res[i].auctionEndTime)
+  
+        
+      listingTimerRet = await listingTimer(res[i].auctionEndTime)
+
+        var format = (listingTimerRet.format)
+        var timeDiff = (listingTimerRet.timeDiff)
+
+        //console.log("days: " + days )
+        //console.log("timeDiff: " +timeDiff )
+
+       res[i].timeDiff = timeDiff
+       res[i].timeFormat = format
+
+       console.log(res[i])
+
+       if (i == res.length - 1)
+       {
+        return res
+       }
+   
+    }
+
+
+}
+
+
+async function getListingInfo() {
+
+const listingInfoPromise = new Promise(async(resolve,reject) => 
+{
       pool.query('SELECT * FROM Listing', (error, results, fields) => {
-          eventEmitter.fire(results);
+        listingsInfo = results;
           //console.log("event emitted: " + results);
+          resolve(results)
       });
-   }
+  })
+
+  return listingInfoPromise;
  }
 
-emitListingInfo();
+
+ function getListingInfoAndEmit() {
+
+getListingInfo().then((res) => {
+  listingsInfo = res;
+  appendListingTimers(res).then((res2) => {
+    console.log("emitting listings: " + JSON.stringify(res2))
+    emitListingInfo(res2);
+  })
+});
+ }
+ setInterval(getListingInfoAndEmit,1000);
+
+
+async function emitListingInfo(res2) {
+  console.log("about to fire results: " + JSON.stringify(res2))
+    eventEmitter.fire(res2);
+}
 
 app.use(express.urlencoded());
 app.use(bodyParser.json())
@@ -64,6 +181,7 @@ app.get('/', function (req, res) {
 });
 
 app.post('/listingBid',(req, res) => {
+
     console.log("received bid: " + JSON.stringify(req.body.bid) + " from seller: " + JSON.stringify(req.body.seller) )
 
     let sql = "UPDATE Listing SET currentBid = ? WHERE Seller = ?";
