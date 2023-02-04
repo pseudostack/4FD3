@@ -74,6 +74,7 @@ async function listingTimer(endTime)
           };
   }
   else  {
+    console.log("error.  days: " + days + " hrs: " + hrs + " mins: "+mins + " secs: " + secs)
     return {'format': 'error',
             'timeDiff': 'error'
           };
@@ -103,7 +104,7 @@ async function appendListingTimers(res){
        res[i].timeDiff = timeDiff
        res[i].timeFormat = format
 
-       console.log(res[i])
+     //  console.log(res[i])
 
        if (i == res.length - 1)
        {
@@ -136,7 +137,7 @@ const listingInfoPromise = new Promise(async(resolve,reject) =>
 getListingInfo().then((res) => {
   listingsInfo = res;
   appendListingTimers(res).then((res2) => {
-    console.log("emitting listings: " + JSON.stringify(res2))
+   // console.log("emitting listings: " + JSON.stringify(res2))
     emitListingInfo(res2);
   })
 });
@@ -145,7 +146,7 @@ getListingInfo().then((res) => {
 
 
 async function emitListingInfo(res2) {
-  console.log("about to fire results: " + JSON.stringify(res2))
+ // console.log("about to fire results: " + JSON.stringify(res2))
     eventEmitter.fire(res2);
 }
 
