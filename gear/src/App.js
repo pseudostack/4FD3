@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import React, {useState,useEffect} from 'react';
 import axios from 'axios';
 import {Table, Row, Col, Image, Container, InputGroup, Form, Button, Card, Spinner } from 'react-bootstrap';
+import { StopwatchFill, Coin } from 'react-bootstrap-icons';
 import './App.css';
 import { serverUrl } from './routes/url'
 
@@ -73,21 +74,22 @@ function App() {
           {listings.map(listings => (
             <Card className='m-2' style={{ width: '18rem' }}>
             <Card.Body>
-            <Image thumbnail src={'https://auctionlistingpics.s3.amazonaws.com/'+listings.mainpic+'.jpg'}/>
             <Card.Title>{listings.Year} {listings.Make} {listings.Model}</Card.Title>
+            <Image thumbnail src={'https://auctionlistingpics.s3.amazonaws.com/'+listings.mainpic+'.jpg'}  
+            style={{minWidth: 220,maxWidth: 220,minHeight: 180,maxHeight: 180,}}/>
+
             <Card.Text>
             <Table striped bordered hover>
-            <tr>
-     {listings.timeDiff} {listings.timeFormat}
-    </tr>
-    <tr>Current Bid: {listings.currentBid}</tr>
-  <tr>Seller: {listings.Seller}</tr>
+            <tr><td>
+            <StopwatchFill color="red" size="40" /></td><td>{listings.timeDiff} {listings.timeFormat}</td>
+            </tr>
+    <tr><td><Coin color="blue" size="40" /></td><td>${listings.currentBid}</td></tr>
   </Table>
             </Card.Text>
-            <Button variant="primary">Bid +100</Button>
+            <tr><td>
             <InputGroup className="mb-3">
             <Form.Control
-            placeholder="Custom Bid"
+            placeholder={"min $" + (parseInt(listings.currentBid)+100)}
             aria-label="Custom Bid"
             aria-describedby="basic-addon2"
             onChange={handleChange}
@@ -95,10 +97,16 @@ function App() {
             <Button variant="outline-secondary" id={listings.Seller}  onClick={e => submitCustomBid(e.target.id)}>
             Bid
             </Button>
+            <Button variant="outline-secondary" id={listings.Seller+'100'}  onClick={e => submitCustomBid(e.target.id)}>
+            +100
+            </Button>
             </InputGroup>
+            </td>
+            </tr>
             </Card.Body>
             </Card>
           ))}
+
           </Row>
         </Container>
  </div>
