@@ -2,6 +2,8 @@ const express = require('express')
 const cors = require('cors')
 const EventEmitter = require('./event.js')
 var bodyParser = require('body-parser')
+const multer  = require('multer')
+const upload = multer({ dest: 'uploads/' })
 var jsonParser = bodyParser.json()
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
@@ -159,6 +161,7 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
+
 app.get('/', function (req, res) {
    const id = Date.now().toString();
    var timer = null;
@@ -198,6 +201,12 @@ app.get('/listings', (req, res) => {
     pool.query('SELECT * FROM Listing', (error, results, fields) => {
         res.json(results);
     });
+})
+
+app.post('/create', upload.array('pictures', 20), (req, res) => {
+  console.log(req);
+  res.status(200);
+  res.end();
 })
 
 app.listen(port, () =>
