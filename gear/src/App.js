@@ -5,6 +5,7 @@ import {Table, Row, Col, Image, Container, InputGroup, Form, Button, Card, Spinn
 import { StopwatchFill, Coin } from 'react-bootstrap-icons';
 import './App.css';
 import { serverUrl } from './routes/url'
+import NavBar from './Navbar';
 
 
 function App() {
@@ -65,10 +66,10 @@ function App() {
 
     return (
       <div className="App">
-      <Button onClick={refreshListings}>Refresh Listings</Button>
-      <header className="App-header">
+      
+      
       <div style={{ width: '100%' }}>
-
+      <NavBar/>
       <Container>
           <Row xs={1} md={3} lg={3} >
           {listings.map(listings => (
@@ -110,7 +111,7 @@ function App() {
           </Row>
         </Container>
  </div>
-      </header>
+      
       </div>
     );
   }
