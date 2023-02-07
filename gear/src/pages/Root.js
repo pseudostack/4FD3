@@ -4,6 +4,7 @@ import {Table, Row, Col, Image, Container, InputGroup, Form, Button, Card, Spinn
 import { StopwatchFill, Coin } from 'react-bootstrap-icons';
 import './Root.css';
 import { serverUrl } from '../routes/url'
+import NavBar from '../Navbar';
 
 
 function App() {
@@ -64,12 +65,12 @@ function App() {
 
     return (
       <div className="App">
-      <Button onClick={refreshListings}>Refresh Listings</Button>
-      <Button href={`/create`}>Create a Listing</Button>
-      <header className="App-header">
+      
+      
       <div style={{ width: '100%' }}>
-
+      <NavBar/>
       <Container>
+      <Button href={`/create`}>Create a Listing</Button>
           <Row xs={1} md={3} lg={3} >
           {listings.map(listings => (
             <Card className='m-2' style={{ width: '18rem' }}>
@@ -110,7 +111,7 @@ function App() {
           </Row>
         </Container>
  </div>
-      </header>
+      
       </div>
     );
   }
