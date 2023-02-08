@@ -11,6 +11,7 @@ export default class Create extends React.Component {
         this.onVinNumberChange = this.onVinNumberChange.bind(this);
         this.onDescriptionChange = this.onDescriptionChange.bind(this);
         this.pictureInput = React.createRef();
+        this.mainPictureInput = React.createRef();
         this.state = { 
             vinNumber: '',
             description: ''
@@ -30,30 +31,21 @@ export default class Create extends React.Component {
     onSubmit(event)
     {
         event.preventDefault();
-        console.log(arguments);
-        console.log(this.pictureInput)
 
         const form = new FormData();
-        form.append("vinNumber", this.state.vinNumber);
+        form.append("vin", this.state.vinNumber);
         form.append("description", this.state.description);
+        form.append("mainPicture", this.mainPictureInput.current.files[0]);
 
-        var picture =  this.pictureInput.current.files[0];
-        let reader = new FileReader();
-        reader.readAsDataURL(picture);
-
-        form.append("pictures", picture);
+        for (let file of this.pictureInput.current.files)
+        {
+            form.append("pictures", file);
+        }
 
         const headers = {
             "Content-Type": "multipart/form-data"
           };
         axios.post(`${serverUrl}create`, form, headers)
-
-
-        // axios.post(`${serverUrl}create`, {
-        //     vinNumber: this.state.vinNumber,
-        //     description: this.state.description,
-        //     pictures: this.pictureInput.current.files
-        // })
     }
 
     render (){
@@ -76,8 +68,13 @@ export default class Create extends React.Component {
                             </InputGroup>
 
                             <InputGroup className="mb-3">
-                                <Form.Label htmlFor="Pictures">Pictures</Form.Label>
-                                <Form.Control name="Pictures" type="file" ref={this.pictureInput} />
+                                <Form.Label htmlFor="mainPicture">Main Picture</Form.Label>
+                                <Form.Control name="mainPicture" type="file" ref={this.mainPictureInput} />
+                            </InputGroup>
+
+                            <InputGroup className="mb-3">
+                                <Form.Label htmlFor="pictures">Pictures</Form.Label>
+                                <Form.Control name="pictures" type="file" ref={this.pictureInput} multiple />
                             </InputGroup>
                         </Card.Body>
                         <Card.Footer>

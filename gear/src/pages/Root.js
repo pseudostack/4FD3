@@ -76,8 +76,12 @@ function App() {
             <Card className='m-2' style={{ width: '18rem' }}>
             <Card.Body>
             <Card.Title>{listings.Year} {listings.Make} {listings.Model}</Card.Title>
-            <Image thumbnail src={'https://auctionlistingpics.s3.amazonaws.com/'+listings.mainpic+'.jpg'}  
+            <Image thumbnail src={listings.mainPicture}  
             style={{minWidth: 220,maxWidth: 220,minHeight: 180,maxHeight: 180,}}/>
+            {listings.pictures.map(picture => (
+              <Image thumbnail src={picture}  
+              style={{minWidth: 110,maxWidth: 110,minHeight: 90,maxHeight: 90}}/>
+            ))}
 
             <Card.Text>
             <Table striped bordered hover>

@@ -3,9 +3,12 @@ const cors = require('cors')
 const EventEmitter = require('./event.js')
 var bodyParser = require('body-parser')
 const multer  = require('multer')
-const upload = multer({ dest: 'uploads/' })
 var jsonParser = bodyParser.json()
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
+const { S3Client, ListObjectsCommand } = require('@aws-sdk/client-s3')
+const multerS3 = require('multer-s3')
+const uuid = require('uuid');
+const uuidv4 = uuid.v4;
 
 const app = express()
 const port = 3001
@@ -14,7 +17,13 @@ const database = require('./database')
 const pool = database.getPool();
 const eventEmitter = new EventEmitter();
 
-
+const s3 = new S3Client({
+  credentials: {
+    accessKeyId: 'AKIAY3K2KOHOJXBMASM3',
+    secretAccessKey: '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'
+  },
+  region: 'us-east-1'
+});
 
 async function sleep(ms) {
    return new Promise((resolve) => {
@@ -123,7 +132,20 @@ async function getListingInfo() {
 
 const listingInfoPromise = new Promise(async(resolve,reject) => 
 {
-      pool.query('SELECT * FROM Listing', (error, results, fields) => {
+      pool.query('SELECT * FROM Listing', async (error, results, fields) => {
+        for (let listing of results)
+        {
+          const prefix = listing.listingID + '/pictures/'
+          let response = await s3.send(new ListObjectsCommand({
+            Prefix: prefix,
+            Bucket: 'auctionlistingpics',
+          }))
+
+          listing.mainPicture = 'https://auctionlistingpics.s3.amazonaws.com/' + listing.listingID + '/main'
+          listing.pictures = response?.Contents
+            ?.filter(c => c.Key !== prefix)
+            ?.map(c => 'https://auctionlistingpics.s3.amazonaws.com/' + c.Key) ?? []
+        }
         listingsInfo = results;
           //console.log("event emitted: " + results);
           resolve(results)
@@ -198,15 +220,42 @@ app.post('/listingBid',(req, res) => {
 });
 
 app.get('/listings', (req, res) => {
-    pool.query('SELECT * FROM Listing', (error, results, fields) => {
+    pool.query('SELECT * FROM Listing', async (error, results, fields) => {   
         res.json(results);
     });
 })
 
-app.post('/create', upload.array('pictures', 20), (req, res) => {
-  console.log(req);
-  res.status(200);
-  res.end();
+app.post('/create', (req, res) => {
+  pool.query('INSERT INTO Listing (VIN, Description, UserId, Year, Make, Model, Body, startingBid, floorBid, auctionStartTime, auctionEndTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+   [req.body.vin, req.body.description, null, '2342', 'Toyota', 'Prius', 'SUV', 0, 500, '2023-01-20 21:29:00', '2023-03-10 21:29:00'], (err, results) => {
+    const id = results.insertId;
+    const upload = multer({
+      storage: multerS3({
+        s3: s3,
+        bucket: 'auctionlistingpics',
+        key: function (req, file, cb) {
+          if (file.fieldname === 'mainPicture')
+          {
+            cb(null, id + '/main')
+          }
+          else
+          {
+            cb(null, id + '/pictures/' + uuidv4())
+          }
+        },
+        contentType: function(req, file, cb) {
+          cb(null, file.mimetype)
+        }
+      })
+    })
+
+    upload.fields([{ name: 'mainPicture', maxCount: 1 }, { name: 'pictures', maxCount: 20 }])(req, {}, function (err) {
+      if (err) throw err
+
+      res.status(200);
+      res.end();
+    })
+  })
 })
 
 app.listen(port, () =>
