@@ -1,26 +1,28 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import Root from './pages/Root';
+import Index from './pages/Index';
 import Create from './pages/Create';
 import reportWebVitals from './reportWebVitals';
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-
+import NavBar from './Navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
+import { Route, Outlet, RouterProvider, createRoutesFromElements, createBrowserRouter } from 'react-router-dom';
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Root />,
-  },
-  {
-    path: '/create',
-    element: <Create />
-  }
-]);
+const AppLayout = () => (
+  <>
+    <NavBar />
+    <Outlet />
+  </>
+);
+
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route element={<AppLayout />}>
+      <Route path="/" element={<Index />} />
+      <Route path="/create" element={<Create />} />
+    </Route>
+  )
+);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

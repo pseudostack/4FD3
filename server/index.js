@@ -17,6 +17,7 @@ const database = require('./database')
 const pool = database.getPool();
 const eventEmitter = new EventEmitter();
 
+const bucketUrl = 'https://auctionlistingpics.s3.amazonaws.com/'
 const s3 = new S3Client({
   credentials: {
     accessKeyId: 'AKIAY3K2KOHOJXBMASM3',
@@ -141,10 +142,10 @@ const listingInfoPromise = new Promise(async(resolve,reject) =>
             Bucket: 'auctionlistingpics',
           }))
 
-          listing.mainPicture = 'https://auctionlistingpics.s3.amazonaws.com/' + listing.listingID + '/main'
+          listing.mainPicture = bucketUrl + listing.listingID + '/main'
           listing.pictures = response?.Contents
             ?.filter(c => c.Key !== prefix)
-            ?.map(c => 'https://auctionlistingpics.s3.amazonaws.com/' + c.Key) ?? []
+            ?.map(c => bucketUrl + c.Key) ?? []
         }
         listingsInfo = results;
           //console.log("event emitted: " + results);
@@ -228,6 +229,8 @@ app.get('/listings', (req, res) => {
 app.post('/create', (req, res) => {
   pool.query('INSERT INTO Listing (VIN, Description, UserId, Year, Make, Model, Body, startingBid, floorBid, auctionStartTime, auctionEndTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
    [req.body.vin, req.body.description, null, '2342', 'Toyota', 'Prius', 'SUV', 0, 500, '2023-01-20 21:29:00', '2023-03-10 21:29:00'], (err, results) => {
+    if (err) throw err
+
     const id = results.insertId;
     const upload = multer({
       storage: multerS3({

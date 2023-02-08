@@ -2,10 +2,9 @@ import React, {useState,useEffect} from 'react';
 import axios from 'axios';
 import {Table, Row, Col, Image, Container, InputGroup, Form, Button, Card, Spinner } from 'react-bootstrap';
 import { StopwatchFill, Coin } from 'react-bootstrap-icons';
-import './Root.css';
+import './Index.css';
 import { serverUrl } from '../routes/url'
-import NavBar from '../Navbar';
-
+import { Link } from 'react-router-dom';
 
 function App() {
 
@@ -68,9 +67,12 @@ function App() {
       
       
       <div style={{ width: '100%' }}>
-      <NavBar/>
       <Container>
-      <Button href={`/create`}>Create a Listing</Button>
+        <div className='d-flex justify-content-center mt-4'>
+          <Link to={'/create'}>
+            <Button>Create a Listing</Button>
+          </Link>
+        </div>
           <Row xs={1} md={3} lg={3} >
           {listings.map(listings => (
             <Card className='m-2' style={{ width: '18rem' }}>
