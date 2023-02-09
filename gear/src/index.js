@@ -2,11 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import Index from './pages/Index';
 import Create from './pages/Create';
+import Listing from './pages/Listing';
 import reportWebVitals from './reportWebVitals';
 import NavBar from './Navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './index.css';
-import { Route, Outlet, RouterProvider, createRoutesFromElements, createBrowserRouter } from 'react-router-dom';
+import './index.scss';
+import { Route, Outlet, RouterProvider, createRoutesFromElements, createBrowserRouter, useParams } from 'react-router-dom';
 
 const AppLayout = () => (
   <>
@@ -20,15 +21,14 @@ const router = createBrowserRouter(
     <Route element={<AppLayout />}>
       <Route path="/" element={<Index />} />
       <Route path="/create" element={<Create />} />
+      <Route path="/listing/:listingID" element={<Listing />} />
     </Route>
   )
 );
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
     <RouterProvider router={router} />
-  </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function
