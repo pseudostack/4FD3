@@ -1,15 +1,33 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import Index from './pages/Index';
+import Create from './pages/Create';
 import reportWebVitals from './reportWebVitals';
-
+import NavBar from './Navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
+import { Route, Outlet, RouterProvider, createRoutesFromElements, createBrowserRouter } from 'react-router-dom';
+
+const AppLayout = () => (
+  <>
+    <NavBar />
+    <Outlet />
+  </>
+);
+
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route element={<AppLayout />}>
+      <Route path="/" element={<Index />} />
+      <Route path="/create" element={<Create />} />
+    </Route>
+  )
+);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <RouterProvider router={router} />
   </React.StrictMode>
 );
 

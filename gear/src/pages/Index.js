@@ -1,12 +1,10 @@
-import logo from './logo.svg';
 import React, {useState,useEffect} from 'react';
 import axios from 'axios';
 import {Table, Row, Col, Image, Container, InputGroup, Form, Button, Card, Spinner } from 'react-bootstrap';
 import { StopwatchFill, Coin } from 'react-bootstrap-icons';
-import './App.css';
-import { serverUrl } from './routes/url'
-import NavBar from './Navbar';
-
+import './Index.css';
+import { serverUrl } from '../routes/url'
+import { Link } from 'react-router-dom';
 
 function App() {
 
@@ -69,15 +67,23 @@ function App() {
       
       
       <div style={{ width: '100%' }}>
-      <NavBar/>
       <Container>
+        <div className='d-flex justify-content-center mt-4'>
+          <Link to={'/create'}>
+            <Button>Create a Listing</Button>
+          </Link>
+        </div>
           <Row xs={1} md={3} lg={3} >
           {listings.map(listings => (
             <Card className='m-2' style={{ width: '18rem' }}>
             <Card.Body>
             <Card.Title>{listings.Year} {listings.Make} {listings.Model}</Card.Title>
-            <Image thumbnail src={'https://auctionlistingpics.s3.amazonaws.com/'+listings.mainpic+'.jpg'}  
+            <Image thumbnail src={listings.mainPicture}  
             style={{minWidth: 220,maxWidth: 220,minHeight: 180,maxHeight: 180,}}/>
+            {listings.pictures.map(picture => (
+              <Image thumbnail src={picture}  
+              style={{minWidth: 110,maxWidth: 110,minHeight: 90,maxHeight: 90}}/>
+            ))}
 
             <Card.Text>
             <Table striped bordered hover>
