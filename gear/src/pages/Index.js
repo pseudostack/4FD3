@@ -2,9 +2,8 @@ import React, {useState,useEffect} from 'react';
 import axios from 'axios';
 import {Table, Row, Col, Image, Container, InputGroup, Form, Button, Card, Spinner } from 'react-bootstrap';
 import { StopwatchFill, Coin } from 'react-bootstrap-icons';
-import './Index.css';
 import { serverUrl } from '../routes/url'
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 function App() {
 
@@ -77,13 +76,11 @@ function App() {
           {listings.map(listings => (
             <Card className='m-2' style={{ width: '18rem' }}>
             <Card.Body>
+            <Link to={'/Listing/:'+listings.listingID} state = {{listingData: listings}}>
             <Card.Title>{listings.Year} {listings.Make} {listings.Model}</Card.Title>
             <Image thumbnail src={listings.mainPicture}  
             style={{minWidth: 220,maxWidth: 220,minHeight: 180,maxHeight: 180,}}/>
-            {listings.pictures.map(picture => (
-              <Image thumbnail src={picture}  
-              style={{minWidth: 110,maxWidth: 110,minHeight: 90,maxHeight: 90}}/>
-            ))}
+            </Link>
 
             <Card.Text>
             <Table striped bordered hover>
