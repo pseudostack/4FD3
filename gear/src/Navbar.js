@@ -1,9 +1,25 @@
+// Client ID: 810412095303-piac1t2r7nnrf4ka095d29tdr9u6icdl.apps.googleusercontent.com
+//Client Secret: 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
+
 import React from 'react';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Container from 'react-bootstrap/Container';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Link } from 'react-router-dom';
+import { LinkContainer } from "react-router-bootstrap";
+
+import Create from "./pages/Create" ;
+import { Route, Outlet, RouterProvider, createRoutesFromElements, createBrowserRouter, useParams } from 'react-router-dom';
+
+
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route >
+      <Route path="/create" element={<Create />} />
+    </Route>
+  )
+);
 
 const NavBar = () => {
   return (
@@ -26,7 +42,11 @@ const NavBar = () => {
           </NavDropdown>
         </Nav>
         <Nav>
-          <Nav.Link href="#details">Details</Nav.Link>
+        <LinkContainer to="/create">
+            <Nav.Link>Create a Listing</Nav.Link>
+          </LinkContainer>
+      
+         
           <Nav.Link  href="#login">Signed in as: Guest
           </Nav.Link>
         </Nav>
