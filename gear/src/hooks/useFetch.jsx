@@ -17,6 +17,7 @@ const useFetch = (url) => {
       body: JSON.stringify({ credential: response.credential }),
     })
       .then((res) => {
+        console.log("body: "  + JSON.stringify({ credential: response.credential }))
         setLoading(false);
   
         return res.json();

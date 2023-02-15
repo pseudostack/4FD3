@@ -1,1 +1,4 @@
-{ "accessKeyId": "AKIAY3K2KOHOJXBMASM3", "secretAccessKey": "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" }
+{ "accessKeyId": "AKIAY3K2KOHOJXBMASM3",
+ "secretAccessKey": "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",
+"GOOGLE_CLIENT_ID" : "810412095303-piac1t2r7nnrf4ka095d29tdr9u6icdl.apps.googleusercontent.com",
+"JWT_SECRET": "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" }

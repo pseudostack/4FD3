@@ -13,6 +13,7 @@ function App() {
   const [bidResponse,setBidResponse] = useState([]);
   const [date,setDate] = useState([]);
 
+
   async function getListingInfo() {
     while (true) {
       try {
