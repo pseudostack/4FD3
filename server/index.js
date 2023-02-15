@@ -1,10 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const EventEmitter = require('./event.js')
-var bodyParser = require('body-parser')
 const multer  = require('multer')
-var jsonParser = bodyParser.json()
-var urlencodedParser = bodyParser.urlencoded({ extended: false })
 const { S3Client, ListObjectsCommand } = require('@aws-sdk/client-s3')
 const multerS3 = require('multer-s3')
 const uuid = require('uuid');
@@ -46,6 +43,8 @@ const s3 = new S3Client({
   },
   region: 'us-east-1'
 });
+
+app.use(express.json());
 
 app.post("/signup", async (req, res) => {
   try {
@@ -112,7 +111,7 @@ app.post("/login", async (req, res) => {
           lastName: profile?.family_name,
           picture: profile?.picture,
           email: profile?.email,
-          token: jwt.sign({ email: profile?.email }, process.env.JWT_SECRET, {
+          token: jwt.sign({ email: profile?.email }, config.JWT_SECRET, {
             expiresIn: "1d",
           }),
         },
@@ -122,6 +121,7 @@ app.post("/login", async (req, res) => {
     res.status(500).json({
       message: error?.message || error,
     });
+    res.end()
   }
 });
 
@@ -274,13 +274,12 @@ async function emitListingInfo(res2) {
     eventEmitter.fire(res2);
 }
 
-app.use(express.urlencoded());
-app.use(bodyParser.json())
-app.use(cors())
+app.use(cors({ credentials: true }))
+
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 
