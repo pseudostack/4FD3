@@ -3,6 +3,8 @@ import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import useFetch from "../hooks/useFetch";
 
+import config from '../config.json'
+
 // https://developers.google.com/identity/gsi/web/reference/js-reference
 
 const Login = () => {
@@ -13,8 +15,9 @@ const Login = () => {
   useEffect(() => {
     /* global google */
     if (window.google) {
+      console.log(config.REACT_APP_GOOGLE_CLIENT_ID)
       google.accounts.id.initialize({
-        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+        client_id: config.REACT_APP_GOOGLE_CLIENT_ID,
         callback: handleGoogle,
       });
 

@@ -9,6 +9,8 @@ const { S3Client, ListObjectsCommand } = require('@aws-sdk/client-s3')
 const multerS3 = require('multer-s3')
 const uuid = require('uuid');
 const uuidv4 = uuid.v4;
+const { OAuth2Client } = require("google-auth-library");
+const jwt = require("jsonwebtoken");
 
 const app = express()
 const port = 3001
@@ -177,7 +179,11 @@ async function emitListingInfo(res2) {
 
 app.use(express.urlencoded());
 app.use(bodyParser.json())
-app.use(cors({ credentials: true }))
+app.use(cors({
+   credentials: true,
+   origin: ["http://localhost:3000"],
+   methods: "GET,POST,PUT,DELETE,OPTIONS",
+}))
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");

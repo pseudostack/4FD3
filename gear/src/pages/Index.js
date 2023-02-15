@@ -6,12 +6,6 @@ import { serverUrl } from '../routes/url'
 import { Link, useParams, BrowserRouter,Route, Navigate, Routes } from 'react-router-dom';
 
 
-// index.js...
-export { default as Login } from "./Login";
-export { default as Signup } from "./Signup";
-export { default as Landing } from "./Landing";
-
-
 function App() {
 
   const [listings, setListingsData] = useState([]);

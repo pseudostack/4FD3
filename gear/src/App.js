@@ -9,12 +9,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.scss';
 import { Route, Outlet, RouterProvider, createRoutesFromElements, createBrowserRouter, useParams, Navigate, Routes, BrowserRouter } from 'react-router-dom';
 
-import {  Landing, Login, Signup} from "./pages";
-
-
-
-
-
+import Landing from './pages/Landing'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
 
 const AppLayout = () => {
     const [user, setUser] = useState({});
@@ -31,11 +28,11 @@ const AppLayout = () => {
           element={user?.email ? <Navigate to="/Index" /> : <Landing />}
         />
         <Route
-          path="/pages/SignUp"
+          path="/signup"
           element={user?.email ? <Navigate to="/Index" /> : <Signup />}
         />
         <Route
-          path="/pages/Login"
+          path="/login"
           element={user?.email ? <Navigate to="/Index" /> : <Login />}
         />
        
