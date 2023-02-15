@@ -12,17 +12,11 @@ import { Route, Outlet, RouterProvider, createRoutesFromElements, createBrowserR
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import useUser from './hooks/useUser';
 
 const AppLayout = () => {
-    const [user, setUser] = useState({});
-
-    useEffect(() => {
-      const theUser = localStorage.getItem("user");
-  
-      if (theUser && !theUser.includes("undefined")) {
-        setUser(JSON.parse(theUser));
-      }
-    }, []);
+  const { user } = useUser();
+  console.log(user);
 
     return(
   <>
@@ -32,20 +26,19 @@ const AppLayout = () => {
     <Outlet />
       <Routes>
         <Route
-          path="/"
-          element={user?.email ? <Navigate to="/Index" /> : <Landing />}
-        />
-        <Route
           path="/signup"
-          element={user?.email ? <Navigate to="/Index" /> : <Signup />}
+          element={user?.email ? <Navigate to="/" /> : <Signup />}
         />
         <Route
           path="/login"
-          element={user?.email ? <Navigate to="/Index" /> : <Login />}
+          element={user?.email ? <Navigate to="/" /> : <Login />}
         />
        
-        <Route path="/" element={<Index />} />
-      <Route path="/create" element={<Create />} />
+      <Route path="/" element={<Index />} />
+      <Route
+          path="/create"
+          element={user?.email ? <Create /> : <Login />}
+        />
       <Route path="/listing/:listingID" element={<Listing />} />
       </Routes>
     </BrowserRouter>

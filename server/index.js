@@ -45,6 +45,7 @@ const s3 = new S3Client({
 });
 
 app.use(express.json());
+app.use(cors())
 
 app.post("/signup", async (req, res) => {
   try {
@@ -273,15 +274,6 @@ async function emitListingInfo(res2) {
  // console.log("about to fire results: " + JSON.stringify(res2))
     eventEmitter.fire(res2);
 }
-
-app.use(cors({ credentials: true }))
-
-
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
 
 app.get('/', function (req, res) {
    const id = Date.now().toString();
