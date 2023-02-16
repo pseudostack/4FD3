@@ -1,21 +1,48 @@
 const express = require('express')
-const cors = require('cors')
+const cors = require('cors');
 const EventEmitter = require('./event.js')
-var bodyParser = require('body-parser')
 const multer  = require('multer')
-var jsonParser = bodyParser.json()
-var urlencodedParser = bodyParser.urlencoded({ extended: false })
 const { S3Client, ListObjectsCommand } = require('@aws-sdk/client-s3')
 const multerS3 = require('multer-s3')
 const uuid = require('uuid');
 const uuidv4 = uuid.v4;
+const { OAuth2Client } = require("google-auth-library");
+const jwt = require("jsonwebtoken");
+
 
 const app = express()
+
+
+
 const port = 3001
 const database = require('./database')
 
 const pool = database.getPool();
 const eventEmitter = new EventEmitter();
+
+const config = require('./config.json')
+
+const GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID;
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+app.use(express.json());
+
+app.use(cors({
+  origin: '*'
+}));
+
+async function verifyGoogleToken(token) {
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: GOOGLE_CLIENT_ID,
+    });
+    return { payload: ticket.getPayload() };
+  } catch (error) {
+    return { error: "Invalid user detected. Please try again" };
+  }
+}
+
 
 const bucketUrl = 'https://auctionlistingpics.s3.amazonaws.com/'
 const s3 = new S3Client({
@@ -24,6 +51,88 @@ const s3 = new S3Client({
     secretAccessKey: 'HyRpV3xM2AMXBtpEdiheMX+e6p25MPAMquetydJt'
   },
   region: 'us-east-1'
+});
+
+app.post("/signup", async (req, res) => {
+  try {
+    // console.log({ verified: verifyGoogleToken(req.body.credential) });
+    if (req.body.credential) {
+      const verificationResponse = await verifyGoogleToken(req.body.credential);
+
+      if (verificationResponse.error) {
+        return res.status(400).json({
+          message: verificationResponse.error,
+        });
+      }
+
+      const profile = verificationResponse?.payload;
+
+      DB.push(profile);
+
+      res.status(201).json({
+        message: "Signup was successful",
+        user: {
+          firstName: profile?.given_name,
+          lastName: profile?.family_name,
+          picture: profile?.picture,
+          email: profile?.email,
+          token: jwt.sign({ email: profile?.email }, "myScret", {
+            expiresIn: "1d",
+          }),
+        },
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "An error occurred. Registration failed.",
+    });
+  }
+});
+
+app.post("/login", async (req, res) => {
+  console.log(req.body)
+  try {
+    if (req.body.credential) {
+      const verificationResponse = await verifyGoogleToken(req.body.credential);
+      if (verificationResponse.error) {
+        return res.status(400).json({
+          message: verificationResponse.error,
+        });
+      }
+
+      const profile = verificationResponse?.payload;
+
+    
+      const existsInDB = true;
+//      const existsInDB = DB.find((person) => person?.email === profile?.email);
+
+      if (!existsInDB) {
+        return res.status(400).json({
+          message: "You are not registered. Please sign up",
+        });
+      }
+
+      res.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+
+      res.status(201).json({
+        message: "Login was successful",
+        user: {
+          firstName: profile?.given_name,
+          lastName: profile?.family_name,
+          picture: profile?.picture,
+          email: profile?.email,
+          token: jwt.sign({ email: profile?.email }, config.JWT_SECRET, {
+            expiresIn: "1d",
+          }),
+        },
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error?.message || error,
+    });
+    res.end
+  }
 });
 
 async function sleep(ms) {
@@ -175,17 +284,9 @@ async function emitListingInfo(res2) {
     eventEmitter.fire(res2);
 }
 
-app.use(express.urlencoded());
-app.use(bodyParser.json())
-app.use(cors({ credentials: true }))
-
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
 
 app.get('/', function (req, res) {
+  console.log("request to / received")
    const id = Date.now().toString();
    var timer = null;
    const handler = function(event) {
@@ -227,8 +328,11 @@ app.get('/listings', (req, res) => {
 })
 
 app.post('/create', (req, res) => {
-  pool.query('INSERT INTO Listing (VIN, Description, UserId, Year, Make, Model, Body, startingBid, floorBid, auctionStartTime, auctionEndTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-   [req.body.vin, req.body.description, null, '2342', 'Toyota', 'Prius', 'SUV', 0, 500, '2023-01-20 21:29:00', '2023-03-10 21:29:00'], (err, results) => {
+  console.log(req.body)
+  console.log("adding to DB")
+
+  pool.query('INSERT INTO Listing (VIN, Description, userID, Year, Make, Model, Body, startingBid, floorBid, auctionStartTime, auctionEndTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+   [req.body.vinNum, req.body.desc, null, req.body.year, req.body.make, req.body.model, req.body.body, req.body.startBid, req.body.floorBid, req.body.startTime.replace('T', ' ').replace('Z', ''), req.body.endTime.replace('T', ' ').replace('Z', '')], (err, results) => {
     if (err) throw err
 
     const id = results.insertId;
@@ -252,6 +356,7 @@ app.post('/create', (req, res) => {
       })
     })
 
+
     upload.fields([{ name: 'mainPicture', maxCount: 1 }, { name: 'pictures', maxCount: 20 }])(req, {}, function (err) {
       if (err) throw err
 
@@ -261,7 +366,7 @@ app.post('/create', (req, res) => {
   })
 })
 
-app.listen(port, () =>
-{
-    console.log(`Example app listening on port ${port}`);
-})
+app.listen(port, function(err) {
+  if (err) return console.log(err);
+  console.log("Listening on port 3001");
+});

@@ -3,7 +3,8 @@ import axios from 'axios';
 import {Table, Row, Col, Image, Container, InputGroup, Form, Button, Card, Spinner } from 'react-bootstrap';
 import { StopwatchFill, Coin } from 'react-bootstrap-icons';
 import { serverUrl } from '../routes/url'
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, BrowserRouter,Route, Navigate, Routes } from 'react-router-dom';
+
 
 function App() {
 
@@ -11,6 +12,7 @@ function App() {
   const [bid,setBid] = useState([]);
   const [bidResponse,setBidResponse] = useState([]);
   const [date,setDate] = useState([]);
+
 
   async function getListingInfo() {
     while (true) {
@@ -51,9 +53,11 @@ function App() {
     }
 
     useEffect(() => {
-      //refreshListings()
+      
       getListingInfo();
-
+      /*global google*/ 
+      
+      
       setInterval(() => {
         var today = new Date().toISOString();
         setDate(today);
@@ -62,15 +66,14 @@ function App() {
     }, [])
 
     return (
-      <div className="App">
       
+      <div className="App">
+     
       
       <div style={{ width: '100%' }}>
       <Container>
         <div className='d-flex justify-content-center mt-4'>
-          <Link to={'/create'}>
-            <Button>Create a Listing</Button>
-          </Link>
+         
         </div>
           <Row xs={1} md={3} lg={3} >
           {listings.map(listings => (
