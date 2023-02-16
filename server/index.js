@@ -1,5 +1,5 @@
 const express = require('express')
-const cors = require('cors')
+const cors = require('cors');
 const EventEmitter = require('./event.js')
 const multer  = require('multer')
 const { S3Client, ListObjectsCommand } = require('@aws-sdk/client-s3')
@@ -9,7 +9,11 @@ const uuidv4 = uuid.v4;
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
 
+
 const app = express()
+
+
+
 const port = 3001
 const database = require('./database')
 
@@ -21,6 +25,11 @@ const config = require('./config.json')
 const GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
+app.use(express.json());
+
+app.use(cors({
+  origin: '*'
+}));
 
 async function verifyGoogleToken(token) {
   try {
@@ -43,9 +52,6 @@ const s3 = new S3Client({
   },
   region: 'us-east-1'
 });
-
-app.use(express.json());
-app.use(cors())
 
 app.post("/signup", async (req, res) => {
   try {
@@ -84,6 +90,7 @@ app.post("/signup", async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
+  console.log(req.body)
   try {
     if (req.body.credential) {
       const verificationResponse = await verifyGoogleToken(req.body.credential);
@@ -105,6 +112,8 @@ app.post("/login", async (req, res) => {
         });
       }
 
+      res.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+
       res.status(201).json({
         message: "Login was successful",
         user: {
@@ -122,7 +131,7 @@ app.post("/login", async (req, res) => {
     res.status(500).json({
       message: error?.message || error,
     });
-    res.end()
+    res.end
   }
 });
 
@@ -275,7 +284,9 @@ async function emitListingInfo(res2) {
     eventEmitter.fire(res2);
 }
 
+
 app.get('/', function (req, res) {
+  console.log("request to / received")
    const id = Date.now().toString();
    var timer = null;
    const handler = function(event) {
@@ -317,8 +328,11 @@ app.get('/listings', (req, res) => {
 })
 
 app.post('/create', (req, res) => {
-  pool.query('INSERT INTO Listing (VIN, Description, UserId, Year, Make, Model, Body, startingBid, floorBid, auctionStartTime, auctionEndTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-   [req.body.vin, req.body.description, null, '2342', 'Toyota', 'Prius', 'SUV', 0, 500, '2023-01-20 21:29:00', '2023-03-10 21:29:00'], (err, results) => {
+  console.log(req.body)
+  console.log("adding to DB")
+
+  pool.query('INSERT INTO Listing (VIN, Description, userID, Year, Make, Model, Body, startingBid, floorBid, auctionStartTime, auctionEndTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+   [req.body.vinNum, req.body.desc, null, req.body.year, req.body.make, req.body.model, req.body.body, req.body.startBid, req.body.floorBid, req.body.startTime.replace('T', ' ').replace('Z', ''), req.body.endTime.replace('T', ' ').replace('Z', '')], (err, results) => {
     if (err) throw err
 
     const id = results.insertId;
@@ -342,6 +356,7 @@ app.post('/create', (req, res) => {
       })
     })
 
+
     upload.fields([{ name: 'mainPicture', maxCount: 1 }, { name: 'pictures', maxCount: 20 }])(req, {}, function (err) {
       if (err) throw err
 
@@ -351,7 +366,7 @@ app.post('/create', (req, res) => {
   })
 })
 
-app.listen(port, () =>
-{
-    console.log(`Example app listening on port ${port}`);
-})
+app.listen(port, function(err) {
+  if (err) return console.log(err);
+  console.log("Listening on port 3001");
+});
