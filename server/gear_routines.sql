@@ -18,34 +18,8 @@ USE `gear`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `comments`
+-- Dumping routines for database 'gear'
 --
-
-DROP TABLE IF EXISTS `comments`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `comments` (
-  `commentID` int NOT NULL,
-  `userID` int DEFAULT NULL,
-  `listingID` int DEFAULT NULL,
-  `text` varchar(45) DEFAULT NULL,
-  `date` datetime DEFAULT NULL,
-  PRIMARY KEY (`commentID`),
-  KEY `userID_idx` (`userID`),
-  KEY `commentListingId_idx` (`listingID`),
-  CONSTRAINT `commentListingId` FOREIGN KEY (`listingID`) REFERENCES `listing` (`listingID`),
-  CONSTRAINT `userID` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `comments`
---
-
-LOCK TABLES `comments` WRITE;
-/*!40000 ALTER TABLE `comments` DISABLE KEYS */;
-/*!40000 ALTER TABLE `comments` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

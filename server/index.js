@@ -8,7 +8,8 @@ const uuid = require('uuid');
 const uuidv4 = uuid.v4;
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
-
+const moment = require('moment')
+var upload = multer();
 
 const app = express()
 
@@ -25,11 +26,53 @@ const config = require('./config.json')
 const GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
+let clients = [];
+let facts = [];
+
 app.use(express.json());
 
 app.use(cors({
   origin: '*'
 }));
+
+
+function eventsHandler(request, response) {
+  console.log("event handler called!")
+  const headers = {
+    'Content-Type': 'text/event-stream',
+    'Connection': 'keep-alive',
+    'Cache-Control': 'no-cache'
+  };
+  response.writeHead(200, headers);
+
+  getListingInfoAndEmit().then(function(value)
+  { 
+    console.log("emitting listings in here")
+    console.log(value[1].currentBid)
+    var data = `data: ${JSON.stringify(value)}\n\n`;
+    response.write(data);
+} )
+  
+  const clientId = Date.now();
+
+  const newClient = {
+    id: clientId,
+    response
+  };
+
+  clients.push(newClient);
+  console.log("current clients: " +clients);
+
+  request.on('close', () => {
+    console.log(`${clientId} Connection closed`);
+    clients = clients.filter(client => client.id !== clientId);
+  });
+}
+
+app.get('/events', eventsHandler);
+
+
+
 
 async function verifyGoogleToken(token) {
   try {
@@ -195,7 +238,7 @@ async function listingTimer(endTime)
           };
   }
   else  {
-    console.log("error.  days: " + days + " hrs: " + hrs + " mins: "+mins + " secs: " + secs)
+   // console.log("error.  days: " + days + " hrs: " + hrs + " mins: "+mins + " secs: " + secs)
     return {'format': 'error',
             'timeDiff': 'error'
           };
@@ -266,81 +309,126 @@ const listingInfoPromise = new Promise(async(resolve,reject) =>
  }
 
 
- function getListingInfoAndEmit() {
-
+ async function getListingInfoAndEmit() {
+ const getListingInfoAndEmitPromise = new Promise((resolve,reject) =>
+  {
+console.log("get listing info and emit function called!")
 getListingInfo().then((res) => {
   listingsInfo = res;
+  console.log(res[1].currentBid)
   appendListingTimers(res).then((res2) => {
    // console.log("emitting listings: " + JSON.stringify(res2))
-    emitListingInfo(res2);
+    resolve(res2);
   })
 });
- }
- setInterval(getListingInfoAndEmit,1000);
-
-
-async function emitListingInfo(res2) {
- // console.log("about to fire results: " + JSON.stringify(res2))
-    eventEmitter.fire(res2);
+ });
+ return getListingInfoAndEmitPromise;
 }
 
 
-app.get('/', function (req, res) {
-  console.log("request to / received")
-   const id = Date.now().toString();
-   var timer = null;
-   const handler = function(event) {
-      clearTimeout(timer);
-      //console.log('event', event);
-      res.status(201);
-      res.end(JSON.stringify(event));
-   };
 
-   eventEmitter.register(id, handler);
-   timer = setTimeout(function(){
-      console.log('timeout');
-      const wasUnregistered = eventEmitter.unregister(id);
-      //console.log("wasUnregistered", wasUnregistered);
-      if (wasUnregistered){
-         res.status(200);
-         res.end();
-      }
-   }, 5000);
+ function sendEventsToAll(newFact) {
+  clients.forEach(client => client.response.write(`data: ${JSON.stringify(newFact)}\n\n`))
+}
+
+app.get('/', async function (req, res) {
+  console.log("request to / received")
+  getListingInfoAndEmit().then(function(value)
+  { 
+    console.log(value)
+    sendEventsToAll(value);
+  } )
+
+  
+ 
 });
+
+
+app.get("/realtime-listings", function (req, res) {
+  res.writeHead(200, {
+    Connection: "keep-alive",
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+  });
+  setInterval(() => {
+    getListingInfoAndEmit().then(function(value)
+    { 
+      console.log(value)
+      res.status(200).json({success: true, data: value})  ;
+    res.write(
+      "data:" +
+      value
+    );
+  } )
+    res.write("\\n\\n");
+  }, 15000);
+});
+
+
+
 
 app.post('/listingBid',(req, res) => {
 
-    console.log("received bid: " + JSON.stringify(req.body.bid) + " from seller: " + JSON.stringify(req.body.seller) )
+    console.log("received bid: " + JSON.stringify(req.body.bid) + " for listing id: " + JSON.stringify(req.body.id) )
 
-    let sql = "UPDATE Listing SET currentBid = ? WHERE Seller = ?";
-    let data = [req.body.bid,req.body.seller];
+    let sql = "UPDATE Listing SET currentBid = ? WHERE listingID = ?";
+    let data = [req.body.bid,req.body.id];
 
-    let query = pool.query(sql, data,(err, results) => {
+    let query = pool.query(sql, data,async (err, results) => {
         if(err) throw err;
-        res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+       // console.log("query results: " + JSON.stringify(results));
+        getListingInfoAndEmit().then( value => 
+        { 
+          console.log(value[1].currentBid)
+          console.log("emitting listings")
+          sendEventsToAll(value);
+          res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+      })
+        
+
     });
 });
 
 app.get('/listings', (req, res) => {
+
     pool.query('SELECT * FROM Listing', async (error, results, fields) => {   
         res.json(results);
     });
 })
 
-app.post('/create', (req, res) => {
-  console.log(req.body)
-  console.log("adding to DB")
+const getListings = new Promise((resolve,reject) => {
+  pool.query('SELECT * FROM Listing', async (error, results, fields) => {   
+    resolve(results);
+  });
+})
 
-  pool.query('INSERT INTO Listing (VIN, Description, userID, Year, Make, Model, Body, startingBid, floorBid, auctionStartTime, auctionEndTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-   [req.body.vinNum, req.body.desc, null, req.body.year, req.body.make, req.body.model, req.body.body, req.body.startBid, req.body.floorBid, req.body.startTime.replace('T', ' ').replace('Z', ''), req.body.endTime.replace('T', ' ').replace('Z', '')], (err, results) => {
+
+
+app.post('/create', (req, res) => {
+  
+  console.log("in here");
+  console.log(req.body)
+
+  var startTime = moment(req.body.startTime).format("YYYY-MM-DD HH:mm")
+  var endTime = moment(req.body.startTime).format("YYYY-MM-DD HH:mm")
+
+  console.log(startTime)
+  console.log(endTime)
+
+console.log("adding listing to DB")
+
+  pool.query('INSERT INTO Listing (VIN, Description, userID, Year, Make, Model, Body, Color, Transmission, Odometer, startingBid, floorBid, auctionStartTime, auctionEndTime) VALUES (?, ?, ?, ?, ?, ?,?,?,?, ?, ?, ?, ?, ?)',
+   [req.body.vinNum, req.body.desc, null, req.body.year, req.body.make, req.body.model, req.body.body, req.body.color, req.body.trans, req.body.odo, req.body.startBid, req.body.floorBid, startTime,endTime], (err, results) => {
     if (err) throw err
 
+    console.log(results.insertId);
     const id = results.insertId;
     const upload = multer({
       storage: multerS3({
         s3: s3,
         bucket: 'auctionlistingpics',
         key: function (req, file, cb) {
+          console.log("file: " + file)
           if (file.fieldname === 'mainPicture')
           {
             cb(null, id + '/main')
@@ -364,6 +452,7 @@ app.post('/create', (req, res) => {
       res.end();
     })
   })
+
 })
 
 app.listen(port, function(err) {

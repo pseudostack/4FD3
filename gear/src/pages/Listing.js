@@ -84,7 +84,7 @@ useLayoutEffect (() => {
           </Link>
         </div>
         <Row>
-          {data.Year} {data.Make} {data.Model}
+          {data.Year} {data.Make} {data.Model}  
           <Row>           
 <Col>
         <img
@@ -110,7 +110,39 @@ alt=""
         :<></>
           
       ))}
+     
       </div></Col>
+
+      <Table striped="columns">
+      <tbody>
+        <tr>
+          <td>Year</td>
+          <td>{data.Year}</td>
+          <td>Transmission</td>
+          <td>{data.transmission}</td>
+        </tr>
+        <tr>
+          <td>Make</td>
+          <td>{data.Make}</td>
+          <td>Body Style</td>
+          <td>{data.Body}</td>
+        </tr>
+        <tr>
+          <td>Model</td>
+          <td>{data.Model}</td>
+          <td>Color</td>
+          <td>{data.color}</td>
+        </tr>
+        <tr>
+          <td>VIN</td>
+          <td>{data.VIN}</td>
+          <td>Odometer</td>
+          <td> {data.odometer}</td>
+        </tr>
+      </tbody>
+    </Table>
+  
+   
 
 {isViewerOpen && ((
         <ImageViewer
