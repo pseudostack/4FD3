@@ -9,9 +9,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.scss';
 import { Route, Outlet, RouterProvider, createRoutesFromElements, createBrowserRouter, useParams, Navigate, Routes, BrowserRouter } from 'react-router-dom';
 
-import Landing from './pages/Landing'
 import Login from './pages/Login'
-import Signup from './pages/Signup'
 import useUser from './hooks/useUser';
 
 const AppLayout = () => {
@@ -25,10 +23,6 @@ const AppLayout = () => {
     <NavBar />
     <Outlet />
       <Routes>
-        <Route
-          path="/signup"
-          element={user?.email ? <Navigate to="/" /> : <Signup />}
-        />
         <Route
           path="/login"
           element={user?.email ? <Navigate to="/" /> : <Login />}

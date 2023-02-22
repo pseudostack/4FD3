@@ -53,42 +53,6 @@ const s3 = new S3Client({
   region: 'us-east-1'
 });
 
-app.post("/signup", async (req, res) => {
-  try {
-    // console.log({ verified: verifyGoogleToken(req.body.credential) });
-    if (req.body.credential) {
-      const verificationResponse = await verifyGoogleToken(req.body.credential);
-
-      if (verificationResponse.error) {
-        return res.status(400).json({
-          message: verificationResponse.error,
-        });
-      }
-
-      const profile = verificationResponse?.payload;
-
-      DB.push(profile);
-
-      res.status(201).json({
-        message: "Signup was successful",
-        user: {
-          firstName: profile?.given_name,
-          lastName: profile?.family_name,
-          picture: profile?.picture,
-          email: profile?.email,
-          token: jwt.sign({ email: profile?.email }, "myScret", {
-            expiresIn: "1d",
-          }),
-        },
-      });
-    }
-  } catch (error) {
-    res.status(500).json({
-      message: "An error occurred. Registration failed.",
-    });
-  }
-});
-
 app.post("/login", async (req, res) => {
   console.log(req.body)
   try {
@@ -102,14 +66,29 @@ app.post("/login", async (req, res) => {
 
       const profile = verificationResponse?.payload;
 
-    
-      const existsInDB = true;
-//      const existsInDB = DB.find((person) => person?.email === profile?.email);
+      const checkUserExists = new Promise((resolve, reject) =>
+      {
+        pool.query('SELECT * FROM users WHERE googleID = ?', [profile.sub], async (error, results, fields) => {   
+          if (error) {
+            reject(error);
+          }
+          resolve(results.length > 0);
+        });
+      });
+      const existsInDB = await checkUserExists;
 
       if (!existsInDB) {
-        return res.status(400).json({
-          message: "You are not registered. Please sign up",
+        const insertNewUser = new Promise((resolve, reject) =>
+        {
+          pool.query('INSERT INTO users (googleID, email, name, pictureUrl) VALUES (?, ?, ?, ?)', [profile.sub, profile.email, profile.name, profile.picture], async (error, results, fields) => {   
+            if (error) {
+              reject(error);
+            }
+            resolve();
+          });
         });
+        
+        await insertNewUser;
       }
 
       res.set('Access-Control-Allow-Origin', 'http://localhost:3000');
@@ -286,6 +265,12 @@ async function emitListingInfo(res2) {
 
 
 app.get('/', function (req, res) {
+  // token: jwt.sign({ email: profile?.email }, config.JWT_SECRET, {
+  //   expiresIn: "1d",
+  // }),
+
+  // jwt.decode()
+
   console.log("request to / received")
    const id = Date.now().toString();
    var timer = null;

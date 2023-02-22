@@ -42,8 +42,7 @@ CREATE TABLE `listing` (
   `Description` varchar(2000) DEFAULT NULL,
   PRIMARY KEY (`listingID`),
   KEY `userID_idx` (`userID`),
-  KEY `listingUserId_idx` (`userID`),
-  CONSTRAINT `listingUserId` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`)
+  CONSTRAINT `listingID` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
