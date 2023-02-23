@@ -2,13 +2,12 @@ const express = require('express')
 const cors = require('cors');
 const EventEmitter = require('./event.js')
 const multer  = require('multer')
-const { S3Client, ListObjectsCommand } = require('@aws-sdk/client-s3')
+const { S3Client } = require('@aws-sdk/client-s3')
 const multerS3 = require('multer-s3')
 const uuid = require('uuid');
 const uuidv4 = uuid.v4;
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
-
 
 const app = express()
 
@@ -26,10 +25,7 @@ const GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 app.use(express.json());
-
-app.use(cors({
-  origin: '*'
-}));
+app.use(cors());
 
 async function verifyGoogleToken(token) {
   try {
@@ -52,6 +48,19 @@ const s3 = new S3Client({
   },
   region: 'us-east-1'
 });
+
+const s3Upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: 'auctionlistingpics',
+    key: function (req, file, cb) {
+        cb(null, uuidv4())
+    },
+    contentType: function(req, file, cb) {
+      cb(null, file.mimetype)
+    }
+  })
+})
 
 app.post("/signup", async (req, res) => {
   try {
@@ -131,7 +140,7 @@ app.post("/login", async (req, res) => {
     res.status(500).json({
       message: error?.message || error,
     });
-    res.end
+    res.end()
   }
 });
 
@@ -243,21 +252,10 @@ async function getListingInfo() {
 const listingInfoPromise = new Promise(async(resolve,reject) => 
 {
       pool.query('SELECT * FROM Listing', async (error, results, fields) => {
-        for (let listing of results)
-        {
-          const prefix = listing.listingID + '/pictures/'
-          let response = await s3.send(new ListObjectsCommand({
-            Prefix: prefix,
-            Bucket: 'auctionlistingpics',
-          }))
-
-          listing.mainPicture = bucketUrl + listing.listingID + '/main'
-          listing.pictures = response?.Contents
-            ?.filter(c => c.Key !== prefix)
-            ?.map(c => bucketUrl + c.Key) ?? []
-        }
-        listingsInfo = results;
-          //console.log("event emitted: " + results);
+          for (let result of results)
+          {
+            result.pictures = result.pictures?.split(',')?.map(p => 'https://auctionlistingpics.s3.amazonaws.com/' + p)
+          }
           resolve(results)
       });
   })
@@ -327,42 +325,17 @@ app.get('/listings', (req, res) => {
     });
 })
 
-app.post('/create', (req, res) => {
+app.post('/create', s3Upload.fields([{ name: 'pictures', maxCount: 30 }]), (req, res) => {
   console.log(req.body)
   console.log("adding to DB")
 
-  pool.query('INSERT INTO Listing (VIN, Description, userID, Year, Make, Model, Body, startingBid, floorBid, auctionStartTime, auctionEndTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-   [req.body.vinNum, req.body.desc, null, req.body.year, req.body.make, req.body.model, req.body.body, req.body.startBid, req.body.floorBid, req.body.startTime.replace('T', ' ').replace('Z', ''), req.body.endTime.replace('T', ' ').replace('Z', '')], (err, results) => {
+  const pictureIds = req.files['pictures'].map(p => p.key).join(',')
+  pool.query('INSERT INTO Listing (VIN, Description, userID, Year, Make, Model, Body, startingBid, floorBid, auctionStartTime, auctionEndTime, pictures) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+   [req.body.vinNum, req.body.description, null, req.body.year, req.body.make, req.body.model, req.body.body, req.body.startBid, req.body.floorBid, req.body.startTime?.replace('T', ' ')?.replace('Z', ''), req.body.endTime?.replace('T', ' ')?.replace('Z', ''), pictureIds], (err, results) => {
     if (err) throw err
 
-    const id = results.insertId;
-    const upload = multer({
-      storage: multerS3({
-        s3: s3,
-        bucket: 'auctionlistingpics',
-        key: function (req, file, cb) {
-          if (file.fieldname === 'mainPicture')
-          {
-            cb(null, id + '/main')
-          }
-          else
-          {
-            cb(null, id + '/pictures/' + uuidv4())
-          }
-        },
-        contentType: function(req, file, cb) {
-          cb(null, file.mimetype)
-        }
-      })
-    })
-
-
-    upload.fields([{ name: 'mainPicture', maxCount: 1 }, { name: 'pictures', maxCount: 20 }])(req, {}, function (err) {
-      if (err) throw err
-
-      res.status(200);
-      res.end();
-    })
+    res.status(200);
+    res.end();
   })
 })
 

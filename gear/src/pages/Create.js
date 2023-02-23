@@ -14,7 +14,6 @@ import { serverUrl } from '../routes/url'
 export default function Create() {
     const [vin, setVin] = useState('');
     const [description, setDescription] = useState('');
-    const mainPictureInput = useRef(null);
     const pictureInput = useRef(null);
     const vinNum = useRef(null);
     const year = useRef(null);
@@ -57,62 +56,29 @@ export default function Create() {
     function onSubmit(event)
     {
         event.preventDefault();
-
+  
         const form = new FormData();
-        form.append("vin", vinNum);
-        form.append("vin", year);
-        form.append("vin", make);
-        form.append("vin", model);
-        form.append("vin", type);
-        form.append("description", desc);
-        form.append("mainPicture", mainPictureInput.current.files[0]);
-
+        form.append("vinNum",vinNum.current.value);
+        form.append("year",year.current.value)
+        form.append("make",make.current.value)
+        form.append("model",model.current.value)
+        form.append("body", type.current.value)
+        form.append("description", description);
+        form.append("startBid", startBid.current.value)
+        form.append("floorBid", floorBid.current.value)
+  
         for (let file of pictureInput.current.files)
         {
             form.append("pictures", file);
         }
 
-        console.log(vinNum.current.value)
-
-        console.log("endtime: "+ endTime.current.value)
-        
-        const params = JSON.stringify({
-
-           'vinNum': vinNum.current.value,
-           'year': year.current.value,
-           'make': make.current.value,
-           'model':model.current.value,
-           'body': type.current.value,
-           'desc': desc.current.value,
-           'endTime' : endTime,
-           'startTime': startTime,
-           'startBid': startBid.current.value,
-           'floorBid': floorBid.current.value
-            });
-
-
-          axios.post(serverUrl+'create', params,{
-
-            "headers": {
-            
-            "content-type": "application/json",
-            
-            },
-            
-            })
-            .then(function(response) {
-            
-            console.log(response);
-            
-            })
-            
-            .catch(function(error) {
-            
-            console.log(error);
-            
-            });
-            
- 
+        const headers = {
+            "Content-Type": "multipart/form-data"
+        };
+        axios.post(`${serverUrl}create`, form, headers)
+        .then(res => {
+            navigate("/")
+        })
     }
 
     return (
@@ -204,11 +170,6 @@ export default function Create() {
       />
     </LocalizationProvider>
 
-
-                        <InputGroup className="mb-3">
-                            <Form.Label htmlFor="mainPicture">Main Picture</Form.Label>
-                            <Form.Control name="mainPicture" type="file" ref={mainPictureInput} />
-                        </InputGroup>
 
                         <InputGroup className="mb-3">
                             <Form.Label htmlFor="pictures">Pictures</Form.Label>

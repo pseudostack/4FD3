@@ -20,8 +20,7 @@ function Listing({listingData}) {
   const location = useLocation();
   const data = location.state?.listingData;
 
-  var pics = location.state?.listingData.pictures;
-  var mainpic =  location.state?.listingData.mainPicture;
+  var pics = location.state?.listingData.pictures ?? [];
 
   const [combPics, setCombPics] = useState([]);
 
@@ -58,7 +57,6 @@ const closeImageViewer = () => {
 
 useLayoutEffect (() => {
 
-  pics.unshift(mainpic)
   setCombPics(pics);
   setImagesReady(true);
 
