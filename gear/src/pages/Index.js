@@ -76,12 +76,12 @@ function App() {
          
         </div>
           <Row xs={1} md={3} lg={3} >
-          {listings.map(listings => (
+          {listings.map != null && listings.map(listings => (
             <Card className='m-2' style={{ width: '18rem' }}>
             <Card.Body>
             <Link to={'/Listing/:'+listings.listingID} state = {{listingData: listings}}>
             <Card.Title>{listings.Year} {listings.Make} {listings.Model}</Card.Title>
-            <Image thumbnail src={listings.mainPicture}  
+            <Image thumbnail src={listings.pictures != null ? listings.pictures[0] : ''}  
             style={{minWidth: 220,maxWidth: 220,minHeight: 180,maxHeight: 180,}}/>
             </Link>
 
