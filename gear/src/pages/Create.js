@@ -14,7 +14,6 @@ import { serverUrl } from '../routes/url'
 export default function Create() {
     const [vin, setVin] = useState('');
     const [description, setDescription] = useState('');
-    const mainPictureInput = useRef(null);
     const pictureInput = useRef(null);
     const vinNum = useRef(null);
     const year = useRef(null);
@@ -62,32 +61,26 @@ export default function Create() {
     {
         event.preventDefault();
 
-        console.log("mainPicture Input ref: " + mainPictureInput.current.files[0])
+        const form = new FormData();
+        form.append("vin", vinNum);
+        form.append("vin", year);
+        form.append("vin", make);
+        form.append("vin", model);
+        form.append("vin", type);
+        form.append("description", desc);
 
-        const formData = new FormData();
-
-  
-
-        formData.append("vinNum",vinNum.current.value);
-        formData.append("year",year.current.value)
-        formData.append("make",make.current.value)
-        formData.append("model",model.current.value)
-        formData.append("body", type.current.value)
-        formData.append("color", color.current.value,)
-        formData.append("trans", trans.current.value)
-        formData.append("odo",odo.current.value)
-        formData.append("desc",desc.current.value)
-        formData.append("endTime" , endTime)
-        formData.append("startTime", startTime)
-        formData.append("startBid", startBid.current.value)
-        formData.append("floorBid", floorBid.current.value)
-
-        formData.append("mainPicture", mainPictureInput.current.files[0]);
 
         for (let file of pictureInput.current.files)
         {
             formData.append("pictures", file);
         }
+
+        console.log(vinNum.current.value)
+
+        console.log("endtime: "+ endTime.current.value)
+        
+
+
 
         const headers = {
             "Content-Type": "multipart/form-data"
@@ -97,6 +90,8 @@ export default function Create() {
             navigate("/")
         })
        
+            
+ 
     }
 
     return (
@@ -205,11 +200,6 @@ export default function Create() {
       />
     </LocalizationProvider>
 
-
-                        <InputGroup className="mb-3">
-                            <Form.Label htmlFor="mainPicture">Main Picture</Form.Label>
-                            <Form.Control name="mainPicture" type="file" ref={mainPictureInput} />
-                        </InputGroup>
 
                         <InputGroup className="mb-3">
                             <Form.Label htmlFor="pictures">Pictures</Form.Label>
