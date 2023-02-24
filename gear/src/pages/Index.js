@@ -8,24 +8,45 @@ import { Link, useParams, BrowserRouter,Route, Navigate, Routes } from 'react-ro
 
 function App() {
 
+  const [status, setStatus] = useState("idle");
   const [listings, setListingsData] = useState([]);
   const [bid,setBid] = useState([]);
   const [bidResponse,setBidResponse] = useState([]);
   const [date,setDate] = useState([]);
 
+  const [ listening, setListening ] = useState(false);
 
-  async function getListingInfo() {
-    while (true) {
-      try {
-              const response = await axios.get('http://localhost:3001', { timeout: 1000 })
-              setListingsData(response.data);
+   function getListingInfo() {
+          console.log("requesting initial data on load");
+          setStatus("idle");
+              fetch('http://localhost:3001', {method: "GET"}) 
+              .then((res) => (res.status === 200 ? res.json():
+              setStatus("rejected")))
+              .then((result) => 
+              {
+                setListingsData(result.data)
+                console.log("data received and set to: " + result.data)
+              })
+              .catch ((err) => 
+              {
+              setStatus("rejected")
+              console.log('There was an error: ', err)
+              }
+              );
+
       }
-      catch (error) {
-          console.log('There was an error: ', error);
-          throw new Error(error);
+
+const updateListingInfo = (data) => {
+  const parsedData = JSON.parse(data);
+  setListingsData((listings) =>
+    [...listings].map((listing) => {
+      if (listing.id === parsedData.id) {
+        return parsedData;
       }
-  }
-}
+      return listing;
+    })
+  );
+};
 
   const handleChange = (e) => {
     e.preventDefault();
@@ -37,8 +58,12 @@ function App() {
     console.log(e)
     console.log("about to submit custom bid to server...")
 
-    axios.post('http://localhost:3001/listingBid', {'seller': e, 'bid': bid})
-           .then(response => setBidResponse(response.data.id));
+    axios.post('http://localhost:3001/listingBid', {'id': e, 'bid': bid})
+           .then(response => {
+            console.log("got response back!");
+            setBidResponse(response.data.id)
+           
+           })
  };
 
   function refreshListings()
@@ -54,16 +79,21 @@ function App() {
 
     useEffect(() => {
       
-      getListingInfo();
-      /*global google*/ 
-      
-      
-      setInterval(() => {
-        var today = new Date().toISOString();
-        setDate(today);
-      }, 1000); 
+      if (!listening) {
+     
+      const events = new EventSource('http://localhost:3001/events');
 
-    }, [])
+      events.onmessage = (event) => {
+        console.log("new event received!");
+    
+        var parsedData = JSON.parse(event.data);
+        console.log(parsedData);
+        setListingsData(parsedData);
+      };
+
+      setListening(true);
+    }
+  }, [listening, listings]);
 
     return (
       
@@ -101,10 +131,10 @@ function App() {
             aria-describedby="basic-addon2"
             onChange={handleChange}
             />
-            <Button variant="outline-secondary" id={listings.Seller}  onClick={e => submitCustomBid(e.target.id)}>
+            <Button variant="outline-secondary" id={listings.listingID}  onClick={e => submitCustomBid(e.target.id)}>
             Bid
             </Button>
-            <Button variant="outline-secondary" id={listings.Seller+'100'}  onClick={e => submitCustomBid(e.target.id)}>
+            <Button variant="outline-secondary" id={listings.listingID}  onClick={e => submitCustomBid(e.target.id)}>
             +100
             </Button>
             </InputGroup>
