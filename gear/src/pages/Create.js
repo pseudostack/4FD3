@@ -91,7 +91,7 @@ export default function Create() {
 
         const headers = {
             "Content-Type": "multipart/form-data"
-        };a
+        };
         axios.post(`${serverUrl}create`, formData, headers)
         .then(res => {
             navigate("/")

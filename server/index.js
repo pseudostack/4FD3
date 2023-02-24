@@ -8,6 +8,7 @@ const uuid = require('uuid');
 const uuidv4 = uuid.v4;
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
+const moment = require('moment');  
 
 
 const app = express()
@@ -46,7 +47,6 @@ function eventsHandler(request, response) {
   getListingInfoAndEmit().then(function(value)
   { 
     console.log("emitting listings in here")
-    console.log(value[1].currentBid)
     var data = `data: ${JSON.stringify(value)}\n\n`;
     response.write(data);
 } )
@@ -312,7 +312,6 @@ const listingInfoPromise = new Promise(async(resolve,reject) =>
 console.log("get listing info and emit function called!")
 getListingInfo().then((res) => {
   listingsInfo = res;
-  console.log(res[1].currentBid)
   appendListingTimers(res).then((res2) => {
    // console.log("emitting listings: " + JSON.stringify(res2))
     resolve(res2);
@@ -365,6 +364,7 @@ app.get("/realtime-listings", function (req, res) {
 
 
 app.post('/listingBid',(req, res) => {
+  console.log("here!");
 
     console.log("received bid: " + JSON.stringify(req.body.bid) + " for listing id: " + JSON.stringify(req.body.id) )
 
@@ -376,7 +376,6 @@ app.post('/listingBid',(req, res) => {
        // console.log("query results: " + JSON.stringify(results));
         getListingInfoAndEmit().then( value => 
         { 
-          console.log(value[1].currentBid)
           console.log("emitting listings")
           sendEventsToAll(value);
           res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
@@ -412,7 +411,7 @@ app.post('/create', s3Upload.fields([{ name: 'pictures', maxCount: 30 }]), (req,
 console.log("adding listing to DB")
 
 const pictureIds = req.files['pictures'].map(p => p.key).join(',')
-  pool.query('INSERT INTO Listing (VIN, Description, userID, Year, Make, Model, Body, startingBid, floorBid, auctionStartTime, auctionEndTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+  pool.query('INSERT INTO Listing (VIN, Description, userID, Year, Make, Model, Body, color, transmission,odometer, startingBid, floorBid, auctionStartTime, auctionEndTime,pictures) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)',
   [req.body.vinNum, req.body.desc, null, req.body.year, req.body.make, req.body.model, req.body.body, req.body.color, req.body.trans, req.body.odo, req.body.startBid, req.body.floorBid, startTime,endTime, pictureIds], (err, results) => {
 
     if (err) throw err

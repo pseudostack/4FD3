@@ -59,7 +59,11 @@ const updateListingInfo = (data) => {
     console.log("about to submit custom bid to server...")
 
     axios.post('http://localhost:3001/listingBid', {'id': e, 'bid': bid})
-           .then(response => setBidResponse(response.data.id));
+           .then(response => {
+            console.log("got response back!");
+            setBidResponse(response.data.id)
+           
+           })
  };
 
   function refreshListings()
