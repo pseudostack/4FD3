@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `gear` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `gear`;
 -- MySQL dump 10.13  Distrib 8.0.32, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: gear
@@ -35,20 +33,18 @@ CREATE TABLE `listing` (
   `currentBid` varchar(400) DEFAULT NULL,
   `auctionStartTime` timestamp NULL DEFAULT NULL,
   `auctionEndTime` timestamp NULL DEFAULT NULL,
-  `pics` varchar(400) DEFAULT NULL,
-  `mainpic` varchar(45) DEFAULT NULL,
   `userID` int DEFAULT NULL,
   `VIN` varchar(45) DEFAULT NULL,
-    `color` varchar(45) DEFAULT NULL,
+  `color` varchar(45) DEFAULT NULL,
   `transmission` varchar(45) DEFAULT NULL,
   `odometer` varchar(45) DEFAULT NULL,
   `Description` varchar(2000) DEFAULT NULL,
-  `pictures` varchar(65535) DEFAULT NULL,
+  `pictures` mediumtext,
   PRIMARY KEY (`listingID`),
   KEY `userID_idx` (`userID`),
   KEY `listingUserId_idx` (`userID`),
   CONSTRAINT `listingUserId` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -57,7 +53,7 @@ CREATE TABLE `listing` (
 
 LOCK TABLES `listing` WRITE;
 /*!40000 ALTER TABLE `listing` DISABLE KEYS */;
-INSERT INTO `listing` VALUES (1,'2018','Honda','Accord','Sedan','0','500','540000','2023-01-20 21:29:00','2023-04-01 20:29:00','001_front, 001_front_left, 001_front_right, 001_left, 001_rear, 001_rear_right','001_front_left',NULL,NULL,NULL,NULL),(2,'2020','Subaru','WRX','Sedan','0','500','1000','2023-01-20 21:29:00','2023-02-25 21:29:00','002_front, 002_front_left, 002_front_right, 002_right, 002_rear_left, 002_rear_right','002_front_left',NULL,NULL,NULL,NULL),(3,'2016','Toyota','RAV4','SUV','0','500','5000','2023-01-20 21:29:00','2023-02-25 21:29:00','003_front, 003_front_left, 003_left, 003_rear_right, 002_rear','003_front_left',NULL,NULL,NULL,NULL),(4,'2019','Jeep','Wrangler','SUV','0','500','1000','2023-01-20 21:29:00','2023-02-25 21:29:00',NULL,NULL,NULL,NULL,NULL,NULL),(5,'2020','Ford','F-150','Truck','0','500','1000','2023-01-20 21:29:00','2023-02-04 04:35:00',NULL,NULL,NULL,NULL,NULL,NULL),(6,'2014','Honda','CR-V','SUV','0','500','0','2023-01-20 21:29:00','2023-02-04 21:29:00',NULL,NULL,NULL,NULL,NULL,NULL),(7,'2019','GMC','Sierra','Tricl','0','0','0','2023-01-20 21:29:00','2023-02-04 05:00:00',NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `listing` VALUES (1,'2013','AUDI','Q5','Sport Utility Vehicle (SUV)/Multi-Purpose Vehicle (MPV)','0','0','900','2023-08-19 01:11:00','2023-08-19 01:11:00',NULL,'WA1CFCFP0DA091671','Black','Automatic','277000','test','267069cf-ded1-4187-b75b-793cdd259ad6,1125d3ac-87bc-4cb2-9261-29af5c6970fe,a8227f75-d12c-4499-b116-60c283b62a3b,ed22cd55-eac9-4283-ae0d-a891da7e3c30,096c4edf-9b3a-4d54-b32f-d668d6151c84,f593b9fe-e1ba-4c89-a87b-e0ca76bc0198,ea114184-e67b-4a2f-9b2c-3c685d487838,1a96b8bd-baf1-4e88-beda-0fac8fec43e3,1c7a6dba-acb2-47a9-a476-d2991e3fb797,3d14b052-745c-4df5-8572-a9d4e4404bd7,99ccfd2d-e6fc-478a-a7e3-3a5f6b4891ed,76bb4aea-11f5-4122-bf6c-5bace583b4ca,3687a922-9e71-4560-971c-dfde34043631,fa89fced-f598-4b8f-8335-7b8a72191421,8a0555bf-797e-4a7d-8b2e-8127751a3744,ff1a740a-3835-42ce-8ae0-fb07bab44e22');
 /*!40000 ALTER TABLE `listing` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -70,4 +66,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-03 23:34:53
+-- Dump completed on 2023-02-24 14:45:22
