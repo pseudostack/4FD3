@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import * as React from 'react';
-import { Button, Card, Container, Form, InputGroup } from "react-bootstrap";
+import {  Card, Container, Form, InputGroup, ModalBody } from "react-bootstrap";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import TextField from '@mui/material/TextField';
@@ -9,6 +9,16 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 
+import Box from '@mui/material/Box';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+
+import Grid from '@mui/material/Grid';
+import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
+import Paper from '@mui/material/Paper';
 import { serverUrl } from '../routes/url'
 
 export default function Create() {
@@ -33,10 +43,78 @@ export default function Create() {
     const [pics, setPics] = useState([]);
 
 
+    const Item = styled(Paper)(({ theme }) => ({
+      ...theme.typography.body2,
+      textAlign: 'center',
+      color: theme.palette.text.secondary,
+      height: 60,
+      lineHeight: '60px',
+      fontSize:'25px',
+      paddingBottom:"150px",
+      paddingLeft:"50px",
+      paddingRight:"50px",
+      transition: 'background-color 0.3s ease-in-out', 
+      '&:hover': { 
+        backgroundColor: 'lightgray',
+        opacity:0.8
+      }
+      
+    }));
+    
+    const lightTheme = createTheme({ palette: { mode: 'light' } });
+    
+
+    
     const [startTime, setStartTime] = React.useState(new Date('2014-08-18T21:11:54'));
     const [endTime, setEndTime] = React.useState(new Date('2014-08-18T21:11:54'));
- 
+    
+    // Steps 
+    const steps = ['Enter Vin Number', 'Car Details' ,'Create a Listing'];
 
+    const [activeStep, setActiveStep] = React.useState(0);
+    const [skipped, setSkipped] = React.useState(new Set());
+  
+    const isStepOptional = (step) => {
+      return step === 1;
+    };
+  
+    const isStepSkipped = (step) => {
+      return skipped.has(step);
+    };
+  
+    const handleNext = () => {
+      let newSkipped = skipped;
+      if (isStepSkipped(activeStep)) {
+        newSkipped = new Set(newSkipped.values());
+        newSkipped.delete(activeStep);
+      }
+  
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      setSkipped(newSkipped);
+    };
+  
+    const handleBack = () => {
+      setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    };
+  
+    const handleSkip = () => {
+      if (!isStepOptional(activeStep)) {
+ 
+        throw new Error("You can't skip a step that isn't optional.");
+      }
+  
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      setSkipped((prevSkipped) => {
+        const newSkipped = new Set(prevSkipped.values());
+        newSkipped.add(activeStep);
+        return newSkipped;
+      });
+    };
+  
+    const handleReset = () => {
+      setActiveStep(0);
+    };
+  
     const decodeVIN = (e) => {
         console.log("Decoding vin?")
 
@@ -101,77 +179,116 @@ export default function Create() {
  
     }
 
-    return (
+    return( 
         
         <Container className="mt-4">
             
             <form method="POST" onSubmit={onSubmit}>
-                <Card>
-                    <Card.Header>
-                        Create a new Listing
-                    </Card.Header>
-                    <Card.Body>
+            <Stepper activeStep={activeStep}>
+        {steps.map((label, index) => {
+          const stepProps = {
+            completed: undefined,
+          };
+          const labelProps = {
+            optional: undefined,
+          };
+          if (isStepOptional(index)) {
+            labelProps.optional = (
+              <Typography variant="caption">Optional</Typography>
+            );
+          }
+          if (isStepSkipped(index)) {
+            stepProps.completed = false;
+          }
+          return (
+            <Step key={label} {...stepProps}>
+              <StepLabel {...labelProps}>{label}</StepLabel>
+            </Step>
+          );
+        })}
+      </Stepper>
+      {activeStep === steps.length ? (
+        <React.Fragment>
+          <Typography sx={{ mt: 2, mb: 1 }}>
+           Click on the create listing button to post your listing!
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+            <Box sx={{ flex: '1 1 auto' }} />
+            
+            <Button onClick={handleReset} type="submit">Create Listing</Button>
+          </Box>
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <Typography sx={{ mt: 2, mb: 1 }}>Step {activeStep + 1}</Typography>
+          {activeStep === 0 ?
+          
+          <>
+          
+          <InputGroup className="mb-3">                    
+          <Typography sx={{ mt: 2, mb: 1 , pr: 3 }}>Vin Number: </Typography>       
+          <Form.Label htmlFor="VinNumber"></Form.Label>
+          <Form.Control name="VinNumber" value={vin} onChange={verifyVIN} ref={vinNum}/>
+          <Button variant="outline-secondary" id='vin'  onClick={e => decodeVIN(e.target.id)}>Decode VIN </Button>
+          </InputGroup>
 
 
-
-                        <InputGroup className="mb-3">
-                            <Form.Label htmlFor="VinNumber">VIN Number</Form.Label>
-                            <Form.Control name="VinNumber" value={vin} onChange={verifyVIN} ref={vinNum}/>
-                            <Button variant="outline-secondary" id='vin'  onClick={e => decodeVIN(e.target.id)}>Decode VIN
-            </Button>
-                        </InputGroup>
-
-
-                        {vinDecoded == true ?
-                        
-                        <>
-                        <InputGroup className="mb-3">
-                        <Form.Label htmlFor="Year">Year</Form.Label>
-                        <Form.Control name="Year" as="textarea" value={results[10].Value} ref={year}/>
-                        </InputGroup>
-
-                        <InputGroup className="mb-3">
-                        <Form.Label htmlFor="Make">Make</Form.Label>
-                        <Form.Control name="Year" as="textarea" value={results[7].Value} ref={make} />
-                        </InputGroup>
-
-                        <InputGroup className="mb-3">
-                        <Form.Label htmlFor="Model">Model</Form.Label>
-                        <Form.Control name="Year" as="textarea" value={results[9].Value} ref={model}/>
-                        </InputGroup>
-
-                        <InputGroup className="mb-3">
-                        <Form.Label htmlFor="Type">Type</Form.Label>
-                        <Form.Control name="Type" as="textarea" value={results[23].Value} ref={type}/>
-                        </InputGroup>
-
-                        <InputGroup className="mb-3">
-                        <Form.Label htmlFor="Type">Color</Form.Label>
-                        <Form.Control name="Type" as="textarea"  ref={color}/>
-                        </InputGroup>
-
-                        <InputGroup className="mb-3">
-                        <Form.Label htmlFor="Type">Transmission</Form.Label>
-                        <Form.Control name="Type" as="textarea"  ref={trans}/>
-                        </InputGroup>
-
-                        <InputGroup className="mb-3">
-                        <Form.Label htmlFor="Type">Odometer</Form.Label>
-                        <Form.Control name="Type" as="textarea"  ref={odo}/>
-                        </InputGroup>
-
-                        <InputGroup className="mb-3">
-                            <Form.Label htmlFor="Description">Description</Form.Label>
-                            <Form.Control name="Description" as="textarea"  onChange={e => setDescription(e.target.value)} ref={desc} />
-                        </InputGroup>
-
-
+              </>
+          :<></>
+              
+              }
+        
+        {activeStep === 1 && vinDecoded === true ? 
+                        <>                    
+                        <Grid container spacing={2}>
+      
+        <Grid item xs={6} >
+          <ThemeProvider theme={lightTheme}>
+            <Box
+              sx={{
+                
+                p: 4,
+                bgcolor: 'background.default',
+                display: 'grid',
+                gridTemplateColumns: { md: '1fr 1fr 1fr 1fr' },
+                gap: 2,
+                
+              }}
+            >
+             <Item  key={year} elevation={4}>
+                  {`Year: ${results[10].Value}`}
+                </Item>
+                <br/>
+                <Item key={make} elevation={4}>
+                  {`Make: ${results[7].Value}`}
+                </Item>
+                <br/>
+                <Item key={model} elevation={4}>
+                  {`Model: ${results[9].Value}`}
+                </Item>
+                <br/>
+                <Item key={type} elevation={4}>
+                  {`Type: ${results[23].Value}`}
+                </Item>
+            </Box>
+          </ThemeProvider>
+        </Grid>
+      
+    </Grid>
                         </>
                     :<></>
                         
                         }
-
-                            <InputGroup className="mb-3">
+         {activeStep === 2 ?
+                        
+                        <>
+                       
+                       <InputGroup className="mb-3">
+                            <Form.Label htmlFor="Description">Add a Description</Form.Label>
+                            <Form.Control name="Description" as="textarea"  onChange={e => setDescription(e.target.value)} ref={desc} />
+                        </InputGroup>
+                       
+                        <InputGroup className="mb-3">
                             <Form.Label htmlFor="StartBid">Starting Bid</Form.Label>
                             <Form.Control name="StartBid" as="textarea" defaultValue={0} ref={startBid} />
                         </InputGroup>
@@ -212,13 +329,27 @@ export default function Create() {
                             <Form.Label htmlFor="pictures">Pictures</Form.Label>
                             <Form.Control name="pictures" type="file" ref={pictureInput} multiple />
                         </InputGroup>
-                       
-                    </Card.Body>
-                    <Card.Footer>
-                        <Button color="primary" type="submit">Create Listing</Button>
-                    </Card.Footer>
-                </Card>
+                        </>
+                    :<></>                 
+                        }
+          <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+            
+            <Button color="inherit" disabled={activeStep === 0} onClick={handleBack} sx={{ mr: 1 }} >
+              Back
+            </Button>
+            <Box sx={{ flex: '1 1 auto' }} />
+            {isStepOptional(activeStep) && (
+              <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
+                Skip
+              </Button>
+            )}
+            <Button onClick={handleNext}>
+              {activeStep === steps.length - 1 ? 'Confirm' : 'Next'}
+            </Button>
+          </Box>
+        </React.Fragment>
+      )}
             </form>
         </Container>
-    )
+    );
 }

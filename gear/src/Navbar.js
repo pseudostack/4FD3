@@ -79,7 +79,7 @@ const NavBar = () => {
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <div className='mx-4 mb-3 mt-1'>
-                  Welcome {user.firstName} ({user.email})
+                  Signed in as: {user.firstName} ({user.email})
                 </div>
                 <Dropdown.Divider />
                 <Dropdown.Item onClick={logout}>
