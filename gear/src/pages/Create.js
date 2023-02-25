@@ -31,12 +31,16 @@ export default function Create() {
     const model = useRef(null);
     const type = useRef(null);
     const desc = useRef(null);
+    const color = useRef(null);
+    const odo = useRef(null)
+    const trans = useRef(null);
     const startBid = useRef(null);
     const floorBid = useRef(null);
     const navigate = useNavigate();
     const [results,setResults] = useState();
     const [error,setError] = useState(false);
     const [vinDecoded, setVinDecoded] = useState(false);
+    const [pics, setPics] = useState([]);
 
 
     const Item = styled(Paper)(({ theme }) => ({
@@ -134,29 +138,45 @@ export default function Create() {
     function onSubmit(event)
     {
         event.preventDefault();
-  
-        const form = new FormData();
-        form.append("vinNum",vinNum.current.value);
-        form.append("year",year.current.value)
-        form.append("make",make.current.value)
-        form.append("model",model.current.value)
-        form.append("body", type.current.value)
-        form.append("description", description);
-        form.append("startBid", startBid.current.value)
-        form.append("floorBid", floorBid.current.value)
-  
+
+        const formData = new FormData();
+        formData.append("vinNum",vinNum.current.value);
+        formData.append("year",year.current.value)
+        formData.append("make",make.current.value)
+        formData.append("model",model.current.value)
+        formData.append("body", type.current.value)
+        formData.append("color", color.current.value,)
+        formData.append("trans", trans.current.value)
+        formData.append("odo",odo.current.value)
+        formData.append("desc",desc.current.value)
+        formData.append("endTime" , endTime)
+        formData.append("startTime", startTime)
+        formData.append("startBid", startBid.current.value)
+        formData.append("floorBid", floorBid.current.value)
+
+
         for (let file of pictureInput.current.files)
         {
-            form.append("pictures", file);
+            formData.append("pictures", file);
         }
+
+        console.log(vinNum.current.value)
+
+      
+        
+
+
 
         const headers = {
             "Content-Type": "multipart/form-data"
         };
-        axios.post(`${serverUrl}create`, form, headers)
+        axios.post(`${serverUrl}create`, formData, headers)
         .then(res => {
             navigate("/")
         })
+       
+            
+ 
     }
 
     return( 
@@ -201,24 +221,22 @@ export default function Create() {
       ) : (
         <React.Fragment>
           <Typography sx={{ mt: 2, mb: 1 }}>Step {activeStep + 1}</Typography>
-                        {activeStep === 0 ?
-                        
-                        <>
-                       
-                       <InputGroup className="mb-3">
-                       
-        <Typography sx={{ mt: 2, mb: 1 , pr: 3 }}>Vin Number: </Typography>
-        
-        <Form.Label htmlFor="VinNumber"></Form.Label>
-        <Form.Control name="VinNumber" value={vin} onChange={verifyVIN} ref={vinNum}/>
-        <Button variant="outline-secondary" id='vin'  onClick={e => decodeVIN(e.target.id)}>Decode VIN </Button>
-                    </InputGroup>
+          {activeStep === 0 ?
+          
+          <>
+          
+          <InputGroup className="mb-3">                    
+          <Typography sx={{ mt: 2, mb: 1 , pr: 3 }}>Vin Number: </Typography>       
+          <Form.Label htmlFor="VinNumber"></Form.Label>
+          <Form.Control name="VinNumber" value={vin} onChange={verifyVIN} ref={vinNum}/>
+          <Button variant="outline-secondary" id='vin'  onClick={e => decodeVIN(e.target.id)}>Decode VIN </Button>
+          </InputGroup>
 
 
-                        </>
-                    :<></>
-                        
-                        }
+              </>
+          :<></>
+              
+              }
         
         {activeStep === 1 && vinDecoded === true ? 
                         <>                    
@@ -286,6 +304,7 @@ export default function Create() {
         label="Auction Start Time"
         value={startTime}
         ref={startTime}
+        format="YYY-MM-DD HH:MM:SS"
         onChange={(newValue) => {
           setStartTime(newValue);
         }}
@@ -298,6 +317,7 @@ export default function Create() {
         label="Auction End Time"
         value={endTime}
         ref={endTime}
+        format="YYY-MM-DD HH:MM:SS"
         onChange={(newValue) => {
           setEndTime(newValue);
         }}

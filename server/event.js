@@ -15,8 +15,12 @@ class EventEmitter {
         console.log("Listener resitered as:", id)
     }
 
+
+
     unregister(id) {
+        console.log("Listener deleted:", id)
         return delete this.listeners[id];
+        
     }
 }
 
