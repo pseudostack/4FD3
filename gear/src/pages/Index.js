@@ -120,13 +120,13 @@ const updateListingInfo = (data) => {
             <tr><td>
             <StopwatchFill color="red" size="40" /></td><td>{listings.timeDiff} {listings.timeFormat}</td>
             </tr>
-    <tr><td><Coin color="blue" size="40" /></td><td>${listings.currentBid}</td></tr>
+    <tr><td><Coin color="blue" size="40" /></td><td>{listings.currentBid == null && listings.floorBid >= 0 ? listings.floorBid : listings.currentBid}</td></tr>
   </Table>
             </Card.Text>
             <tr><td>
             <InputGroup className="mb-3">
             <Form.Control
-            placeholder={"min $" + (parseInt(listings.currentBid)+100)}
+            placeholder={'min: $' + (listings.currentBid == null && listings.floorBid >= 0 ? (+listings.floorBid+100) : (+listings.currentBid+100))}
             aria-label="Custom Bid"
             aria-describedby="basic-addon2"
             onChange={handleChange}
