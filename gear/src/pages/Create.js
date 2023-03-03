@@ -24,23 +24,19 @@ import { serverUrl } from '../routes/url'
 export default function Create() {
     const [vin, setVin] = useState('');
     const [description, setDescription] = useState('');
-    const pictureInput = useRef(null);
-    const vinNum = useRef(null);
-    const year = useRef(null);
-    const make  = useRef(null);
-    const model = useRef(null);
-    const type = useRef(null);
-    const desc = useRef(null);
-    const color = useRef(null);
-    const odo = useRef(null)
-    const trans = useRef(null);
-    const startBid = useRef(null);
-    const floorBid = useRef(null);
+    const [year, setYear] = useState('');
+    const [make, setMake]  = useState('');
+    const [model, setModel] = useState('');
+    const [type, setType] = useState('');
+    const [color, setColor] = useState('');
+    const [odo, setOdo] = useState('');
+    const [trans, setTrans] = useState('');
+    const [startBid, setStartBid ]= useState('');
+    const [floorBid, setFloorBid] = useState('');
     const navigate = useNavigate();
     const [results,setResults] = useState();
-    const [error,setError] = useState(false);
     const [vinDecoded, setVinDecoded] = useState(false);
-    const [pics, setPics] = useState([]);
+    const pictureInput = useRef(null);
 
 
     const Item = styled(Paper)(({ theme }) => ({
@@ -83,6 +79,19 @@ export default function Create() {
     };
   
     const handleNext = () => {
+
+      // eslint-disable-next-line eqeqeq
+      console.log("active step: " + activeStep)
+      if (activeStep == 1)
+      {
+        console.log("here setting year?")
+        setYear(results[10].Value)
+        setMake(results[7].Value)
+        setModel(results[9].Value)
+        setType(results[23].Value)
+        console.log("year set to: " + year)
+
+      }
       let newSkipped = skipped;
       if (isStepSkipped(activeStep)) {
         newSkipped = new Set(newSkipped.values());
@@ -135,38 +144,35 @@ export default function Create() {
       
     
 
-    function onSubmit(event)
+      const handleSubmit = (event) => 
     {
+      console.log("here");
         event.preventDefault();
 
         const formData = new FormData();
-        formData.append("vinNum",vinNum.current.value);
-        formData.append("year",year.current.value)
-        formData.append("make",make.current.value)
-        formData.append("model",model.current.value)
-        formData.append("body", type.current.value)
-        formData.append("color", color.current.value,)
-        formData.append("trans", trans.current.value)
-        formData.append("odo",odo.current.value)
-        formData.append("desc",desc.current.value)
+        formData.append("vinNum",vin);
+        formData.append("year",year)
+        formData.append("make",make)
+        formData.append("model",model)
+        formData.append("body", type)
+        formData.append("color", color)
+        formData.append("trans", trans)
+        formData.append("odo",odo)
+        formData.append("desc",description)
         formData.append("endTime" , endTime)
         formData.append("startTime", startTime)
-        formData.append("startBid", startBid.current.value)
-        formData.append("floorBid", floorBid.current.value)
+        formData.append("startBid", startBid)
+        formData.append("floorBid", floorBid)
 
-
+ 
         for (let file of pictureInput.current.files)
         {
+          console.log("file here is: " + file)
             formData.append("pictures", file);
         }
 
-        console.log(vinNum.current.value)
-
-      
-        
-
-
-
+   
+              
         const headers = {
             "Content-Type": "multipart/form-data"
         };
@@ -183,7 +189,7 @@ export default function Create() {
         
         <Container className="mt-4">
             
-            <form method="POST" onSubmit={onSubmit}>
+            <form method="POST" onSubmit={handleSubmit}>
             <Stepper activeStep={activeStep}>
         {steps.map((label, index) => {
           const stepProps = {
@@ -215,7 +221,7 @@ export default function Create() {
           <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
             <Box sx={{ flex: '1 1 auto' }} />
             
-            <Button onClick={handleReset} type="submit">Create Listing</Button>
+            <Button onClick={handleSubmit} type="submit">Create Listing</Button>
           </Box>
         </React.Fragment>
       ) : (
@@ -228,7 +234,7 @@ export default function Create() {
           <InputGroup className="mb-3">                    
           <Typography sx={{ mt: 2, mb: 1 , pr: 3 }}>Vin Number: </Typography>       
           <Form.Label htmlFor="VinNumber"></Form.Label>
-          <Form.Control name="VinNumber" value={vin} onChange={verifyVIN} ref={vinNum}/>
+          <Form.Control name="VinNumber" value={vin} onChange={verifyVIN} />
           <Button variant="outline-secondary" id='vin'  onClick={e => decodeVIN(e.target.id)}>Decode VIN </Button>
           </InputGroup>
 
@@ -256,7 +262,7 @@ export default function Create() {
               }}
             >
              <Item  key={year} elevation={4}>
-                  {`Year: ${results[10].Value}`}
+                  {`Year: ${results[10].Value}` }
                 </Item>
                 <br/>
                 <Item key={make} elevation={4}>
@@ -285,17 +291,32 @@ export default function Create() {
                        
                        <InputGroup className="mb-3">
                             <Form.Label htmlFor="Description">Add a Description</Form.Label>
-                            <Form.Control name="Description" as="textarea"  onChange={e => setDescription(e.target.value)} ref={desc} />
+                            <Form.Control name="Description" as="textarea"  onChange={e => setDescription(e.target.value)} />
+                        </InputGroup>
+                        <InputGroup className="mb-3">
+                            <Form.Label htmlFor="Color">Color</Form.Label>
+                            <Form.Control name="Color" as="textarea"  onChange={e => setColor(e.target.value)} />
                         </InputGroup>
                        
                         <InputGroup className="mb-3">
+                            <Form.Label htmlFor="Odometer">Odometer</Form.Label>
+                            <Form.Control name="Odometer" as="textarea"  onChange={e => setOdo(e.target.value)} />
+                        </InputGroup>
+                       
+                        <InputGroup className="mb-3">
+                            <Form.Label htmlFor="Transmission">Transmission</Form.Label>
+                            <Form.Control name="Transmission" as="textarea"  onChange={e => setTrans(e.target.value)} />
+                        </InputGroup>
+                       
+                       
+                        <InputGroup className="mb-3">
                             <Form.Label htmlFor="StartBid">Starting Bid</Form.Label>
-                            <Form.Control name="StartBid" as="textarea" defaultValue={0} ref={startBid} />
+                            <Form.Control name="StartBid" as="textarea" defaultValue={0} onChange={e => setStartBid(e.target.value)} />
                         </InputGroup>
 
                         <InputGroup className="mb-3">
                             <Form.Label htmlFor="FloorBid">Floor Bid</Form.Label>
-                            <Form.Control name="FloorBid" as="textarea" defaultValue={0} ref={floorBid} />
+                            <Form.Control name="FloorBid" as="textarea" defaultValue={0} onChange={e => setFloorBid(e.target.value)} />
                         </InputGroup>
 
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -303,7 +324,6 @@ export default function Create() {
         renderInput={(props) => <TextField {...props} />}
         label="Auction Start Time"
         value={startTime}
-        ref={startTime}
         format="YYY-MM-DD HH:MM:SS"
         onChange={(newValue) => {
           setStartTime(newValue);
@@ -316,7 +336,6 @@ export default function Create() {
         renderInput={(props) => <TextField {...props} />}
         label="Auction End Time"
         value={endTime}
-        ref={endTime}
         format="YYY-MM-DD HH:MM:SS"
         onChange={(newValue) => {
           setEndTime(newValue);
@@ -343,9 +362,13 @@ export default function Create() {
                 Skip
               </Button>
             )}
+            {activeStep === steps.length - 1 ?
+            <Button onClick={handleSubmit}>Confirm
+            </Button>:
             <Button onClick={handleNext}>
-              {activeStep === steps.length - 1 ? 'Confirm' : 'Next'}
+              Next
             </Button>
+}
           </Box>
         </React.Fragment>
       )}
