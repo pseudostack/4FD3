@@ -9,6 +9,7 @@ const uuidv4 = uuid.v4;
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
 const moment = require('moment');  
+const crypto = require('crypto');
 
 
 const app = express()
@@ -141,7 +142,8 @@ app.post("/signup", async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-  console.log(req.body)
+  console.log("login body info received: ")
+  //console.log(req.body)
   try {
     if (req.body.credential) {
       const verificationResponse = await verifyGoogleToken(req.body.credential);
@@ -153,15 +155,20 @@ app.post("/login", async (req, res) => {
 
       const profile = verificationResponse?.payload;
 
+      console.log(profile)
     
-      const existsInDB = true;
-//      const existsInDB = DB.find((person) => person?.email === profile?.email);
+    userExists(profile.email).then((dbRes) => {
+      console.log("dbres: " +  dbRes)
+      if (dbRes == false)
+      {
+        console.log("user doesn't exist in db, now adding to DB")
+          addUser(profile.email).then((addUserRes) => {
 
-      if (!existsInDB) {
-        return res.status(400).json({
-          message: "You are not registered. Please sign up",
-        });
-      }
+            console.log("user " + profile.userName + " successfully added to DB")
+          
+             })
+            }
+      })
 
       res.set('Access-Control-Allow-Origin', 'http://localhost:3000');
 
@@ -177,6 +184,8 @@ app.post("/login", async (req, res) => {
           }),
         },
       });
+
+
     }
   } catch (error) {
     res.status(500).json({
@@ -289,6 +298,60 @@ async function appendListingTimers(res){
 }
 
 
+async function userExists(userName) {
+
+  const userExistsPromise = new Promise(async(resolve,reject) => 
+  {
+        pool.query('SELECT username FROM users where username like ?',userName, async (error, results, fields) => {
+
+          if (!!results == false)
+          {
+            console.log("user doesn't exist in DB!")
+          }
+
+          resolve(results)
+        });
+    })
+  
+    return userExistsPromise;
+   }
+
+   async function addUser(userName) {
+    console.log("inside adduser function")
+    const addUserPromise = new Promise(async(resolve,reject) => 
+    {
+          pool.query('insert into users (userID, username) values (?,?)',[crypto.randomUUID(),userName], async (error, results, fields) => {
+            
+           console.log("executed this insert user query") 
+           if (error)
+           {
+            console.log("Error inserting username into DB: " + error)
+           }
+   
+            resolve(true)
+          });
+      })
+    
+      return addUserPromise;
+     }
+  
+     async function  getUserId (userName) {
+
+      return new Promise(async(resolve,reject) => 
+      {
+            pool.query('SELECT userID FROM users where username like ?',userName, async (error, results, fields) => {
+    
+              if (!!results == false)
+              {
+                console.log("user doesn't exist in DB!")
+              }
+    
+              resolve(results[0].userID)
+            });
+        })
+      
+       }
+
 async function getListingInfo() {
 
 const listingInfoPromise = new Promise(async(resolve,reject) => 
@@ -399,6 +462,7 @@ const getListings = new Promise((resolve,reject) => {
 })
 
 
+
 app.post('/create', s3Upload.fields([{ name: 'pictures', maxCount: 30 }]), (req, res) => {
   console.log(req.body)
 
@@ -411,17 +475,22 @@ app.post('/create', s3Upload.fields([{ name: 'pictures', maxCount: 30 }]), (req,
 console.log("adding listing to DB")
 
 const pictureIds = req.files['pictures'].map(p => p.key).join(',')
+
+getUserId(req.body.userName).then((userID) => {
+
+  console.log("userID returned: " + userID)
   pool.query('INSERT INTO Listing (VIN, Description, userID, Year, Make, Model, Body, color, transmission,odometer, startingBid, floorBid, auctionStartTime, auctionEndTime,pictures) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)',
-  [req.body.vinNum, req.body.desc, null, req.body.year, req.body.make, req.body.model, req.body.body, req.body.color, req.body.trans, req.body.odo, req.body.startBid, req.body.floorBid, startTime,endTime, pictureIds], (err, results) => {
+  [req.body.vinNum, req.body.desc, userID, req.body.year, req.body.make, req.body.model, req.body.body, req.body.color, req.body.trans, req.body.odo, req.body.startBid, req.body.floorBid, startTime,endTime, pictureIds], (err, results) => {
 
     if (err) throw err
-
-
 
       res.status(200);
       res.end();
 
   })
+
+    
+})
 })
 
 app.listen(port, function(err) {

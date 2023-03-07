@@ -21,7 +21,10 @@ import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import { serverUrl } from '../routes/url'
 
-export default function Create() {
+export default function Create({user}) {
+
+    console.log("logged in user is: " + user.userName)
+
     const [vin, setVin] = useState('');
     const [description, setDescription] = useState('');
     const [year, setYear] = useState('');
@@ -150,6 +153,7 @@ export default function Create() {
         event.preventDefault();
 
         const formData = new FormData();
+        formData.append("userName", user.userName);
         formData.append("vinNum",vin);
         formData.append("year",year)
         formData.append("make",make)
