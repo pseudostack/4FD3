@@ -24,15 +24,15 @@ DROP TABLE IF EXISTS `comments`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `comments` (
   `commentID` int NOT NULL,
-  `userID` int DEFAULT NULL,
+  `userID` varchar(45) DEFAULT NULL,
   `listingID` int DEFAULT NULL,
   `text` varchar(45) DEFAULT NULL,
   `date` datetime DEFAULT NULL,
   PRIMARY KEY (`commentID`),
-  KEY `userID_idx` (`userID`),
   KEY `commentListingId_idx` (`listingID`),
-  CONSTRAINT `commentListingId` FOREIGN KEY (`listingID`) REFERENCES `listing` (`listingID`),
-  CONSTRAINT `userID` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`)
+  KEY `commenter_idx` (`userID`),
+  CONSTRAINT `commenter` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`),
+  CONSTRAINT `commentListingId` FOREIGN KEY (`listingID`) REFERENCES `listing` (`listingID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-25 20:15:37
+-- Dump completed on 2023-03-07 16:46:09
