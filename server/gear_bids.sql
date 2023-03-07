@@ -24,15 +24,13 @@ DROP TABLE IF EXISTS `bids`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `bids` (
   `biddingID` int NOT NULL,
-  `userID` int DEFAULT NULL,
+  `userID` varchar(45) DEFAULT NULL,
   `listingID` int DEFAULT NULL,
   `bidAmount` varchar(45) DEFAULT NULL,
   `bidDate` datetime DEFAULT NULL,
   PRIMARY KEY (`biddingID`),
-  KEY `bidUserId_idx` (`userID`),
-  KEY `bidListingId_idx` (`listingID`),
-  CONSTRAINT `bidListingId` FOREIGN KEY (`listingID`) REFERENCES `listing` (`userID`),
-  CONSTRAINT `bidUserId` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`)
+  KEY `bidder_idx` (`userID`),
+  CONSTRAINT `bidder` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -54,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-25 20:15:36
+-- Dump completed on 2023-03-07 16:46:09

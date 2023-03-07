@@ -37,7 +37,7 @@ const AppLayout = () => {
       <Route path="/" element={<Index />} />
       <Route
           path="/create"
-          element={user?.email ? <Create /> : <Login />}
+          element={user?.email ? <Create user={{userName: user.email}}/> : <Login />}
         />
       <Route path="/listing/:listingID" element={<Listing />} />
       </Routes>
